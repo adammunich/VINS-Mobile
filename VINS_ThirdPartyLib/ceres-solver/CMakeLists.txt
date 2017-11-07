@@ -81,11 +81,11 @@ read_ceres_version_from_source(${CMAKE_SOURCE_DIR})
 
 enable_testing()
 
-option(MINIGLOG "Use a stripped down version of glog." OFF)
-option(GFLAGS "Enable Google Flags." ON)
-option(SUITESPARSE "Enable SuiteSparse." ON)
-option(CXSPARSE "Enable CXSparse." ON)
-option(LAPACK "Enable use of LAPACK." ON)
+option(MINIGLOG "Use a stripped down version of glog." ON)
+option(GFLAGS "Enable Google Flags." OFF)
+option(SUITESPARSE "Enable SuiteSparse." OFF)
+option(CXSPARSE "Enable CXSparse." OFF)
+option(LAPACK "Enable use of LAPACK." OFF)
 # Template specializations for the Schur complement based solvers. If
 # compile time, binary size or compiler performance is an issue, you
 # may consider disabling this.
@@ -192,45 +192,6 @@ if (IOS)
 endif (IOS)
 
 unset(CERES_COMPILE_OPTIONS)
-
-# Eigen.
-find_package(Eigen REQUIRED)
-if (EIGEN_FOUND)
-  if (EIGEN_VERSION VERSION_LESS 3.1.0)
-    message(FATAL_ERROR "-- Ceres requires Eigen version >= 3.1.0 in order "
-      "that Eigen/SparseCore be available, detected version of Eigen is: "
-      "${EIGEN_VERSION}")
-  endif (EIGEN_VERSION VERSION_LESS 3.1.0)
-
-  message("-- Found Eigen version ${EIGEN_VERSION}: ${EIGEN_INCLUDE_DIRS}")
-  # Ensure that only MPL2 licensed code is part of the default build.
-  message("")
-  message("   ===============================================================")
-  if (EIGENSPARSE)
-    list(APPEND CERES_COMPILE_OPTIONS CERES_USE_EIGEN_SPARSE)
-    message("   Enabling the use of Eigen as a sparse linear algebra library ")
-    message("   for solving the nonlinear least squares problems. Enabling ")
-    message("   this option results in an LGPL licensed version of ")
-    message("   Ceres Solver as the Simplicial Cholesky factorization in Eigen")
-    message("   is licensed under the LGPL. ")
-
-    if (EIGEN_VERSION VERSION_LESS 3.2.2)
-      message("   WARNING:")
-      message("")
-      message("   Your version of Eigen is older than version 3.2.2.")
-      message("   The performance of SPARSE_NORMAL_CHOLESKY and SPARSE_SCHUR")
-      message("   linear solvers will suffer. ")
-    endif (EIGEN_VERSION VERSION_LESS 3.2.2)
-
-  else (EIGENSPARSE)
-    message("   Disabling the use of Eigen as a sparse linear algebra library.")
-    message("   This does not affect the covariance estimation algorithm ")
-    message("   which can still use the EIGEN_SPARSE_QR algorithm.")
-    add_definitions(-DEIGEN_MPL2_ONLY)
-  endif (EIGENSPARSE)
-    message("   ===============================================================")
-    message("")
-endif (EIGEN_FOUND)
 
 # LAPACK (& BLAS).
 if (LAPACK)
@@ -514,7 +475,8 @@ include_directories(
 # Note that this is *not* propagated to clients, ie CERES_INCLUDE_DIRS
 # used by clients after find_package(Ceres) does not identify Eigen as
 # as system headers.
-include_directories(SYSTEM ${EIGEN_INCLUDE_DIRS})
+include_directories(${EIGEN_DIRS})
+message("EIGEN PATH: ${EIGEN_DIRS}")
 
 if (SUITESPARSE)
   include_directories(${SUITESPARSE_INCLUDE_DIRS})
