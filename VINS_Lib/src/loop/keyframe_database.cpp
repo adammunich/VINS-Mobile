@@ -150,7 +150,7 @@ void KeyFrameDatabase::optimize4DoFLoopPoseGraph(int cur_index, Eigen::Vector3d 
     
     // w^t_i   w^q_i
     double t_array[max_length][3];
-    Quaterniond q_array[max_length];
+    Quaterniond *q_array = new Quaterniond[max_length];
     double euler_array[max_length][3];
     vector<bool> need_resample;
     
@@ -353,6 +353,7 @@ void KeyFrameDatabase::optimize4DoFLoopPoseGraph(int cur_index, Eigen::Vector3d 
     loop_correct_t = t_drift;
     loop_correct_r = r_drift;
     updateVisualization();
+    delete[] q_array;
 }
 
 void KeyFrameDatabase::updateVisualization()
