@@ -163,7 +163,7 @@ void KeyFrame::searchByDes(std::vector<cv::Point2f> &measurements_old,
                            const std::vector<BRIEF::bitset> &descriptors_old,
                            const std::vector<cv::KeyPoint> &keypoints_old)
 {
-    printf("loop_match before cur %d %d, old %d\n", window_descriptors.size(), measurements.size(), descriptors_old.size());
+    printf("loop_match before cur %lu %lu, old %lu\n", window_descriptors.size(), measurements.size(), descriptors_old.size());
     std::vector<int> dis_cur_old;
     std::vector<uchar> status;
     for(int i = 0; i < window_descriptors.size(); i++)
@@ -186,7 +186,7 @@ void KeyFrame::searchByDes(std::vector<cv::Point2f> &measurements_old,
         }
     }
     rejectWithF(measurements_old, measurements_old_norm);
-    printf("loop_match after cur %d %d, old %d\n", window_descriptors.size(), measurements.size(), descriptors_old.size());
+    printf("loop_match after cur %lu %lu, old %lu\n", window_descriptors.size(), measurements.size(), descriptors_old.size());
 }
 
 /**
