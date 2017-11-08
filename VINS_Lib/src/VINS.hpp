@@ -90,13 +90,13 @@ public:
     Vector3d t_drift;
     Matrix3d r_drift;
     
-    MarginalizationInfo *last_marginalization_info;
+    MarginalizationInfo *last_marginalization_info = nullptr;
     vector<double *> last_marginalization_parameter_blocks;
     vector<Vector3f> point_cloud;
     
     int feature_num;
     
-    IntegrationBase *pre_integrations[10 * (WINDOW_SIZE + 1)];
+    IntegrationBase *pre_integrations[10 * (WINDOW_SIZE + 1)] = { nullptr };
     bool first_imu;
     Vector3d acc_0, gyr_0;
     vector<double> dt_buf[10 * (WINDOW_SIZE + 1)];
@@ -118,7 +118,7 @@ public:
     
     //for initialization
     map<double, ImageFrame> all_image_frame;
-    IntegrationBase *tmp_pre_integration;
+    IntegrationBase *tmp_pre_integration = nullptr;
     Matrix3d back_R0;
     Vector3d back_P0;
     //for falure detection

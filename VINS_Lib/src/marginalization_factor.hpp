@@ -24,12 +24,12 @@ struct ResidualBlockInfo
     
     void Evaluate();
     
-    ceres::CostFunction *cost_function;
-    ceres::LossFunction *loss_function;
+    ceres::CostFunction *cost_function = nullptr;
+    ceres::LossFunction *loss_function = nullptr;
     std::vector<double *> parameter_blocks;
     std::vector<int> drop_set;
     
-    double **raw_jacobians;
+    double **raw_jacobians = nullptr;
     std::vector<Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>> jacobians;
     Eigen::VectorXd residuals;
     
@@ -82,7 +82,7 @@ public:
     MarginalizationFactor(MarginalizationInfo* _marginalization_info);
     virtual bool Evaluate(double const *const *parameters, double *residuals, double **jacobians) const;
     
-    MarginalizationInfo* marginalization_info;
+    MarginalizationInfo* marginalization_info = nullptr;
 };
 
 

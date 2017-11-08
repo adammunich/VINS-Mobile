@@ -31,7 +31,7 @@ public:
     double t;
     Matrix3d R;
     Vector3d T;
-    IntegrationBase *pre_integration;
+    IntegrationBase *pre_integration = nullptr;
     bool is_key_frame;
 };
 

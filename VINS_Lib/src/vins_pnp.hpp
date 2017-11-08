@@ -64,7 +64,7 @@ public:
     double para_Feature[NUM_OF_F][SIZE_FEATURE];
     double para_Ex_Pose[NUM_OF_CAM][SIZE_POSE];
     
-    IntegrationBase *pre_integrations[(PNP_SIZE + 1)];
+    IntegrationBase *pre_integrations[(PNP_SIZE + 1)] = { nullptr };
     vector<IMG_MSG_LOCAL> features[PNP_SIZE + 1];  //condition
     bool first_imu;
     Vector3d acc_0, gyr_0;

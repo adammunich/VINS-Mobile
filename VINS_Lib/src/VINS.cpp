@@ -13,7 +13,8 @@ bool LOOP_CLOSURE = true;
 VINS::VINS()
 :f_manager{Rs},fail_times{0},
 failure_hand{false},
-drawresult{0.0, 0.0, 0.0, 0.0, 0.0, 7.0}
+drawresult{0.0, 0.0, 0.0, 0.0, 0.0, 7.0},
+init_status(FAIL_IMU)
 {
     printf("init VINS begins\n");
     t_drift.setZero();

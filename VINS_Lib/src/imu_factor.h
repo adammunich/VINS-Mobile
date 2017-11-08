@@ -188,7 +188,7 @@ public:
     //void checkCorrection();
     //void checkTransition();
     //void checkJacobian(double **parameters);
-    IntegrationBase* pre_integration;
+    IntegrationBase* pre_integration = nullptr;
     
 };
 
