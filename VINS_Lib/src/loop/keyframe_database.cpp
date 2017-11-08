@@ -1,12 +1,12 @@
 //
-//  keyfame_database.cpp
+//  keyframe_database.cpp
 //  VINS_ios
 //
 //  Created by HKUST Aerial Robotics on 2017/5/2.
 //  Copyright © 2017 HKUST Aerial Robotics. All rights reserved.
 //
 
-#include "keyfame_database.h"
+#include "keyframe_database.h"
 KeyFrameDatabase::KeyFrameDatabase()
 {
     earliest_loop_index = -1;

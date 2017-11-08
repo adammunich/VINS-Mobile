@@ -1,13 +1,13 @@
 //
-//  keyfame_database.hpp
+//  keyframe_database.hpp
 //  VINS_ios
 //
 //  Created by HKUST Aerial Robotics on 2017/5/2.
 //  Copyright © 2017 HKUST Aerial Robotics. All rights reserved.
 //
 
-#ifndef keyfame_database_hpp
-#define keyfame_database_hpp
+#ifndef keyframe_database_hpp
+#define keyframe_database_hpp
 
 #include <stdio.h>
 #include <vector>
@@ -359,4 +359,4 @@ struct FourDOFWeightError
     double weight;
     
 };
-#endif /* keyfame_database_hpp */
+#endif /* keyframe_database_hpp */
