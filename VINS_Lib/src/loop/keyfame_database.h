@@ -17,6 +17,7 @@
 #include <ceres/ceres.h>
 #include <ceres/rotation.h>
 #include "utility.hpp"
+#include <mutex>
 
 //for save keyframe result
 struct KEYFRAME_DATA

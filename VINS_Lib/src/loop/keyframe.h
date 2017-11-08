@@ -11,6 +11,7 @@
 #include "global_param.hpp"
 #include "VINS.hpp"
 #include "loop_closure.h"
+#include <mutex>
 
 using namespace Eigen;
 using namespace std;
