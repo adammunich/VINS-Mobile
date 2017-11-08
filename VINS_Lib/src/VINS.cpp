@@ -1007,9 +1007,9 @@ bool VINS::solveInitial()
     
     if (visualInitialAlign())
     {
-        return true;
         //update init progress
         initProgress = 85;
+        return true;
     }
     else
     {
