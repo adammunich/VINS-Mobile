@@ -9,18 +9,20 @@
 #include "feature_tracker.hpp"
 
 int FeatureTracker::n_id = 0;
-FeatureTracker::FeatureTracker()
-:mask{ROW, COL, CV_8UC1},update_finished{false},img_cnt{0},current_time{-1.0},use_pnp{false}
+FeatureTracker::FeatureTracker(int frame_width, int frame_height)
+    :m_frame_width_(frame_width), m_frame_height_(frame_height),
+    update_finished{false}, img_cnt{0}, current_time{-1.0}, use_pnp{false}
 {
-    printf("init ok\n");
+    mask = cv::Mat(m_frame_height_, m_frame_width_, CV_8UC1);
+    //printf("init ok mask w = %d, h = %d\n", mask.cols, mask.rows);
 }
 /*********************************************************tools function for feature tracker start*****************************************************/
-bool inBorder(const cv::Point2f &pt)
+bool inBorder(const cv::Point2f &pt, const int frame_width, const int frame_height)
 {
     const int BORDER_SIZE = 1;
     int img_x = cvRound(pt.x);
     int img_y = cvRound(pt.y);
-    return BORDER_SIZE <= img_x && img_x < COL - BORDER_SIZE && BORDER_SIZE <= img_y && img_y < ROW - BORDER_SIZE;
+    return BORDER_SIZE <= img_x && img_x < frame_width - BORDER_SIZE && BORDER_SIZE <= img_y && img_y < frame_height - BORDER_SIZE;
 }
 
 template <typename T>
@@ -181,7 +183,7 @@ void FeatureTracker::readImage(const cv::Mat &_img, cv::Mat &result, int _frame_
             calcOpticalFlowPyrLK(cur_img, forw_img, cur_pts, forw_pts, status, err, cv::Size(21, 21), 3);
             //TE(time_track);
             for (int i = 0; i < int(forw_pts.size()); i++)
-                if (status[i] && !inBorder(forw_pts[i]))
+                if (status[i] && !inBorder(forw_pts[i], m_frame_width_, m_frame_height_))
                     status[i] = 0;
             reduceVector(pre_pts, status);
             reduceVector(cur_pts, status);
@@ -260,6 +262,8 @@ void FeatureTracker::readImage(const cv::Mat &_img, cv::Mat &result, int _frame_
                 n_pts.clear();
                 TS(time_goodfeature);
                 //goodFeaturesToTrack(forw_img, n_pts, n_max_cnt, 0.10, MIN_DIST, mask, 3, false, 0.04);
+                printf("forw_img w = %d, h = %d\n", forw_img.cols, forw_img.rows);
+                printf("mask w = %d, h = %d\n", mask.cols, mask.rows);
                 goodFeaturesToTrack(forw_img, n_pts, n_max_cnt, 0.01, MIN_DIST, mask);
                 TE(time_goodfeature);
             }

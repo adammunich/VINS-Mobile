@@ -3,7 +3,9 @@
 
 KeyFrame::KeyFrame(double _header, int _global_index, Eigen::Vector3d _T_w_i, Eigen::Matrix3d _R_w_i,
                    cv::Mat &_image, const char *_brief_pattern_file, const int _segment_index)
-:header{_header}, global_index{_global_index}, T_w_i{_T_w_i}, R_w_i{_R_w_i}, image{_image}, BRIEF_PATTERN_FILE(_brief_pattern_file), segment_index(_segment_index)
+    :m_frame_width_(_image.cols), m_frame_height_(_image.rows), 
+    header{_header}, global_index{_global_index}, T_w_i{_T_w_i}, R_w_i{_R_w_i}, image{_image}, 
+    BRIEF_PATTERN_FILE(_brief_pattern_file), segment_index(_segment_index)
 {
     use_retrive = 0;
     is_looped = 0;
@@ -14,12 +16,12 @@ KeyFrame::KeyFrame(double _header, int _global_index, Eigen::Vector3d _T_w_i, Ei
 }
 
 /*****************************************utility function************************************************/
-bool inBorder2(const cv::Point2f &pt)
+bool inBorder2(const cv::Point2f &pt, const int frame_width, const int frame_height)
 {
     const int BORDER_SIZE = 1;
     int img_x = cvRound(pt.x);
     int img_y = cvRound(pt.y);
-    return BORDER_SIZE <= img_x && img_x < COL - BORDER_SIZE && BORDER_SIZE <= img_y && img_y < ROW - BORDER_SIZE;
+    return BORDER_SIZE <= img_x && img_x < frame_width - BORDER_SIZE && BORDER_SIZE <= img_y && img_y < frame_height - BORDER_SIZE;
 }
 
 template <typename T>

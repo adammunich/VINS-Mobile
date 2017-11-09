@@ -48,13 +48,27 @@ struct VINS_STATUS {
 	int feature_num;
 };
 
+struct VINS_PARAMS {
+	int frame_width;
+	int frame_height;
+	double focal_length_x;
+	double focal_length_y;
+	double px;
+	double py;
+	double tic_x; 
+	double tic_y;
+	double tic_z;
+	double solver_time;
+	int freq;
+};
+
 typedef shared_ptr <IMU_MSG const > ImuConstPtr;
 typedef shared_ptr <IMG_MSG const > ImgConstPtr;
 
 class VinsSystem {
 public:
 
-	VinsSystem(const char* voc_file_path, const char* pattern_file_path);
+	VinsSystem(const char* voc_file_path, const char* pattern_file_path, const char* config_file_path);
 
 	~VinsSystem();
 
@@ -80,6 +94,8 @@ private:
 
 	const char* pattern_file;
 
+	const char* config_file;
+
 	std::vector<Point2f> good_pts;
 
 	std::vector<double> track_len;
@@ -91,6 +107,8 @@ private:
 	boost::thread loop_closing_thread;
 
 	boost::thread global_optimization_thread;
+
+	VINS_PARAMS vins_params;
 
 	int kf_global_index = -1;
 
@@ -240,6 +258,8 @@ private:
 	void fusion();
 
 	std::vector<IMU_MSG_LOCAL> getImuMeasurements(double header);
+
+	void readVinsConfigFile(VINS_PARAMS &params, const char *params_file_path);
 
 };
 

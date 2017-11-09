@@ -131,7 +131,17 @@ bool setGlobalParam(DeviceType device)
     }
 }
 
-
-
-
-
+bool setGlobalParam(double focal_length_x, double focal_length_y,
+    double px, double py, double tic_x, double tic_y, double tic_z,
+    double solver_time, int freq)
+{
+    FOCUS_LENGTH_X = focal_length_x;
+    FOCUS_LENGTH_Y = focal_length_y;
+    PX = px;
+    PY = py;
+    TIC_X = tic_x;
+    TIC_Y = tic_y;
+    TIC_Z = tic_z;
+    SOLVER_TIME = solver_time;
+    FREQ = freq;
+}

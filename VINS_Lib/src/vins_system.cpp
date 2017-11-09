@@ -1,9 +1,28 @@
 #include "vins_system.hpp"
 
-VinsSystem::VinsSystem(const char* voc_file_path, const char* pattern_file_path)
-	: voc_file(voc_file_path), pattern_file(pattern_file_path) {
+VinsSystem::VinsSystem(const char* voc_file_path, 
+						const char* pattern_file_path,
+						const char* config_file_path)
+	: voc_file(voc_file_path), 
+	pattern_file(pattern_file_path),
+	config_file(config_file_path) {
 
-		feature_tracker = new FeatureTracker();
+		vins_params = { // use iPhone 6s config as default
+			480, 640,
+			548.813, 549.477,
+			238.520, 320.379,
+			0.0, 0.065, 0.0,
+			0.06, 3
+		};
+
+		readVinsConfigFile(vins_params, config_file);
+
+		setGlobalParam(vins_params.focal_length_x, vins_params.focal_length_y,
+						vins_params.px, vins_params.py,
+						vins_params.tic_x, vins_params.tic_y, vins_params.tic_z,
+						vins_params.solver_time, vins_params.freq);
+
+		feature_tracker = new FeatureTracker(vins_params.frame_width, vins_params.frame_height);
 
 		vins = new VINS();
 
@@ -45,7 +64,7 @@ void VinsSystem::detectLoopClosure() {
 	{
 		printf("loop start load voc\n");
 		TS(load_voc);
-		loop_closure = new LoopClosure(voc_file, COL, ROW);
+		loop_closure = new LoopClosure(voc_file, vins_params.frame_width, vins_params.frame_height);
 		TE(load_voc);
 		printf("loop load voc finish\n");
 
@@ -411,6 +430,80 @@ std::vector<IMU_MSG_LOCAL> VinsSystem::getImuMeasurements(double header) {
 	}
 	last_header = header;
 	return imu_measurements;    
+}
+
+void VinsSystem::readVinsConfigFile(VINS_PARAMS &params, const char *params_file_path) {
+	if (!params_file_path || params_file_path[0] == '\0') {
+		printf("Empty file path ...\n");
+		return;
+	}
+
+	std::ifstream params_file(params_file_path);
+
+	if (params_file.good()) {
+
+		printf("Found VINS config file\n");
+
+		std::string l1, l2, l3, l4;
+		std::getline(params_file, l1);
+		std::getline(params_file, l2);
+		std::getline(params_file, l3);
+		std::getline(params_file, l4);
+
+		float intrinsics[4], extrinsics[3];
+		float input_solver_time;
+		int input_freq, input_frame_width, input_frame_height;
+		// line 1: fx, fy, cx, cy
+		if (std::sscanf(l1.c_str(), "%f %f %f %f",
+				&intrinsics[0], &intrinsics[1], &intrinsics[2], &intrinsics[3]) == 4) {
+
+			printf("Found VINS params fx: %.3f, fy: %.3f, cx: %.3f, cy: %.3f\n",
+					intrinsics[0], intrinsics[1], intrinsics[2], intrinsics[3]);
+
+			params.focal_length_x = intrinsics[0];
+			params.focal_length_y = intrinsics[1];
+			params.px = intrinsics[2];
+			params.py = intrinsics[3];
+
+		}
+		// line 2: FREQ, solver time
+		if (std::sscanf(l2.c_str(), "%d %f",
+				&input_freq, &input_solver_time) == 2) {
+
+			printf("Found VINS params freq: %d, solver time: %.3f\n",
+					input_freq, input_solver_time);
+
+			params.freq = input_freq;
+			params.solver_time =  input_solver_time;
+
+		}
+		// line 3: tic_x, tic_y, tic_z
+		if (std::sscanf(l3.c_str(), "%f %f %f",
+				&extrinsics[0], &extrinsics[1], &extrinsics[2]) == 3) {
+
+			printf("Found VINS params tic_x: %.3f, tic_y: %.3f, tic_z: %.3f\n",
+					extrinsics[0], extrinsics[1], extrinsics[2]);
+
+			params.tic_x = extrinsics[0];
+			params.tic_y = extrinsics[1];
+			params.tic_z = extrinsics[2];
+
+		}
+		// line 4: width, height
+		if (std::sscanf(l4.c_str(), "%d %d",
+				&input_frame_width, &input_frame_height) == 2) {
+
+			printf("Found VINS params width: %d, height: %d\n",
+					input_frame_width, input_frame_height);
+
+			params.frame_width = input_frame_width;
+			params.frame_height = input_frame_height;
+
+        }
+
+	}
+
+	params_file.close();
 }
 
 void VinsSystem::putAccelData(double imu_timestamp, double accel_x, double accel_y, double accel_z) {

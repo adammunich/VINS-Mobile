@@ -81,6 +81,9 @@ enum StateOrder
 };
 
 bool setGlobalParam(DeviceType device);
+bool setGlobalParam(double focal_length_x, double focal_length_y,
+                    double px, double py, double tic_x, double tic_y, double tic_z,
+                    double solver_time, int freq);
 
 #if 1
 #define TS(name) int64 t_##name = cv::getTickCount()

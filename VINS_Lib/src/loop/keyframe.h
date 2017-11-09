@@ -130,7 +130,8 @@ private:
     std::mutex mMutexPose;
     std::vector<cv::KeyPoint> window_keypoints;
     std::vector<BRIEF::bitset> window_descriptors;
-    
+    const int m_frame_width_;
+    const int m_frame_height_;
 };
 
 #endif
