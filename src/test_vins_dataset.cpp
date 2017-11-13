@@ -10,6 +10,7 @@
 
 #define PROCESS_EUROC_DATASET
 //#define PROCESS_IPHONE_DATASET
+//#define PROCESS_ANDROID_DATASET
 
 void fusionLoop(bool running);
 
@@ -29,6 +30,10 @@ void readEurocTimestamp(const std::string& file_path);
 
 void readEurocImuData(const std::string& file_path);
 
+void readAndroidTimestamp(const std::string& file_path);
+
+void readAndroidImuData(const std::string& file_path);
+
 void drawSomething();
 
 VinsSystem* vins_system;
@@ -37,6 +42,7 @@ std::map<unsigned int, double> iphone_timestamp_storage;
 size_t iphone_img_counter = 0;
 size_t iphone_img_num = 0;
 std::vector<long> euroc_timestamp_storage;
+std::vector<long> android_timestamp_storage;
 std::queue<cv::Mat> tracked_frames;
 
 int main(int argc, char** argv) {
@@ -64,6 +70,15 @@ int main(int argc, char** argv) {
     iphone_img_num = countIphoneImgNumber(iphone_timestamps_dir);
 
     readIphoneImuData(iphone_imu_path);
+#endif 
+
+#ifdef PROCESS_ANDROID_DATASET
+    const std::string android_dataset_path = m_dataset_path + "/image_timestamps.txt";
+    const std::string android_imu_path = m_dataset_path + "/imu.txt";
+
+    readAndroidImuData(android_imu_path);
+
+    readAndroidTimestamp(android_dataset_path);
 #endif 
 
     std::cout << "Create new VINS system ...\n";
@@ -209,13 +224,34 @@ void imgLoop(bool running, const std::string& dataset_path) {
     }
 #endif 
 
+#ifdef PROCESS_ANDROID_DATASET  
+    for (size_t i = 0; i < android_timestamp_storage.size(); ++i) {
+        
+        const std::string img_path(dataset_path + "/image/" + std::to_string(android_timestamp_storage[i]) + ".png");
+        
+        //std::cout << "Image path: " << img_path << "\n";
+        
+        cv::Mat input_frame = cv::imread(img_path, CV_LOAD_IMAGE_COLOR);
+
+        if (input_frame.cols == 0 || input_frame.rows == 0) continue;
+        
+        //std::cout << "Image w: " << input_frame.cols << " h: " << input_frame.rows << "\n";
+
+        vins_system->processFrame(android_timestamp_storage[i] / pow(10, 9), input_frame);
+
+        tracked_frames.push(input_frame);
+
+        boost::this_thread::sleep(boost::posix_time::milliseconds(10));
+    }
+#endif 
+
     std::cout << "imgLoop exits ...\n";
 }
 
 void imuLoop(bool running) {
     size_t imu_counter = 0;
     while (running && imu_counter < imu_storage.size()) {
-        printf("imu loop is running imu_counter = %lu...\n", imu_counter);
+        //printf("imu loop is running imu_counter = %lu...\n", imu_counter);
         
 #ifdef PROCESS_IPHONE_DATASET
         vins_system->putAccelData(imu_storage[imu_counter][0], imu_storage[imu_counter][1], 
@@ -223,9 +259,9 @@ void imuLoop(bool running) {
         vins_system->putGyroData(imu_storage[imu_counter][0], imu_storage[imu_counter][4], 
                                 imu_storage[imu_counter][5], imu_storage[imu_counter][6]);
                 
-        printf("imu: %lf, %lf, %lf, %lf, %lf, %lf, %lf\n", imu_storage[imu_counter][0], 
-                imu_storage[imu_counter][4], imu_storage[imu_counter][5], imu_storage[imu_counter][6], 
-                imu_storage[imu_counter][1], imu_storage[imu_counter][2], imu_storage[imu_counter][3]);
+        // printf("imu: %lf, %lf, %lf, %lf, %lf, %lf, %lf\n", imu_storage[imu_counter][0], 
+        //         imu_storage[imu_counter][4], imu_storage[imu_counter][5], imu_storage[imu_counter][6], 
+        //         imu_storage[imu_counter][1], imu_storage[imu_counter][2], imu_storage[imu_counter][3]);
 #endif
 
 #ifdef PROCESS_EUROC_DATASET
@@ -234,12 +270,22 @@ void imuLoop(bool running) {
         vins_system->putGyroData(imu_storage[imu_counter][0] / pow(10, 9), imu_storage[imu_counter][1], 
                                 imu_storage[imu_counter][2], imu_storage[imu_counter][3]);
 
-        printf("imu: %lf, %lf, %lf, %lf, %lf, %lf, %lf\n", imu_storage[imu_counter][0] / pow(10, 9), 
-                imu_storage[imu_counter][4], imu_storage[imu_counter][5], imu_storage[imu_counter][6], 
-                imu_storage[imu_counter][1], imu_storage[imu_counter][2], imu_storage[imu_counter][3]);
+        // printf("imu: %lf, %lf, %lf, %lf, %lf, %lf, %lf\n", imu_storage[imu_counter][0] / pow(10, 9), 
+        //         imu_storage[imu_counter][4], imu_storage[imu_counter][5], imu_storage[imu_counter][6], 
+        //         imu_storage[imu_counter][1], imu_storage[imu_counter][2], imu_storage[imu_counter][3]);
 
 #endif
-                    
+
+#ifdef PROCESS_ANDROID_DATASET
+        vins_system->putAccelData(imu_storage[imu_counter][0], imu_storage[imu_counter][1], 
+            imu_storage[imu_counter][2], imu_storage[imu_counter][3]);
+        vins_system->putGyroData(imu_storage[imu_counter][4], imu_storage[imu_counter][5], 
+            imu_storage[imu_counter][6], imu_storage[imu_counter][7]);  
+        // printf("imu: %lf, %lf, %lf, %lf, %lf, %lf, %lf, %lf\n", 
+        //         imu_storage[imu_counter][0], imu_storage[imu_counter][1], imu_storage[imu_counter][2], imu_storage[imu_counter][3], 
+        //         imu_storage[imu_counter][4], imu_storage[imu_counter][5], imu_storage[imu_counter][6], imu_storage[imu_counter][7]);
+#endif
+
         imu_counter++;
 
         boost::this_thread::sleep(boost::posix_time::milliseconds(1));
@@ -412,4 +458,78 @@ void readEurocImuData(const std::string& file_path) {
 
     printf("readEurocImuData found %lu imu data\n", imu_storage.size());
 
+}
+
+void readAndroidTimestamp(const std::string& file_path) {
+    ifstream in_stream(file_path, ios::in);
+    
+        std::string curr_line;
+    
+        if (in_stream.is_open()) {
+                
+            while (getline(in_stream, curr_line)) {
+    
+                //std::cout << curr_line << "\n";
+    
+                istringstream iss(curr_line);
+    
+                long timestamp_long;
+    
+                while (iss >> timestamp_long) {
+    
+                    //std::cout << "Timestamp is: " << timestamp_long << "\n";
+    
+                    android_timestamp_storage.push_back(timestamp_long);
+    
+                    break;
+    
+                }
+            }
+    
+            in_stream.close();
+        }
+    
+        printf("readAndroidTimestamp found %lu images\n", android_timestamp_storage.size());
+}
+
+void readAndroidImuData(const std::string& file_path) {
+    ifstream in_stream(file_path, ios::in);
+    
+        std::string curr_line;
+    
+        if (in_stream.is_open()) {
+    
+            getline(in_stream, curr_line);
+    
+            std::vector<double> imu_data(8);
+    
+            while (getline(in_stream, curr_line)) {
+    
+                imu_data.clear();
+                
+                istringstream iss(curr_line);
+    
+                double data;
+    
+                while (iss >> data) {
+    
+                    imu_data.push_back(data);
+    
+                    if (iss.peek() == ' ') {
+                        iss.ignore();
+                    }
+    
+                }
+    
+                printf("%f %f %f %f %f %f %f %f\n", imu_data[0], imu_data[1], imu_data[2],
+                                    imu_data[3], imu_data[4], imu_data[5], imu_data[6], imu_data[7]);
+    
+                imu_storage.push_back(imu_data);
+    
+            }
+    
+            in_stream.close();
+        }
+    
+        printf("readAndroidImuData found %lu imu data\n", imu_storage.size());
 }
