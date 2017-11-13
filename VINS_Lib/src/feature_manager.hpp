@@ -20,8 +20,8 @@
 #include "utility.hpp"
 
 #define COMPENSATE_ROTATION false
-#define MIN_PARALLAX_POINT ((double)(3.0/549))
-#define MIN_PARALLAX ((double)(10.0/549))
+#define MIN_PARALLAX_POINT ((double)(3.0/FOCUS_LENGTH_X))
+#define MIN_PARALLAX ((double)(10.0/FOCUS_LENGTH_X))
 #define INIT_DEPTH ((double)(5.0))
 
 using namespace Eigen;
