@@ -1,6 +1,121 @@
 # VINS-Mobile
 ## Monocular Visual-Inertial State Estimator on Mobile Phones
 
+**13 Nov 2017**: Wrap VINS-Mobile into a library to be used on multiple platforms.
+
+Dependencies: 
+	Boost 
+	OpenCV 
+	Ceres-Solver
+
+Test with Boost 1.63, OpenCV 3.2, Ceres-Solver 1.12 on Ubuntu 16.04, GCC 4.9, Clang 3.8.
+
+Build procedure:
+
+	Linux/Ubuntu:
+
+	1. Build Ceres-Solver (a minimal version). 
+		
+		cd VINS_ThirdPartyLib/ceres-solver/
+		
+		export EIGEN_DIRS=absolute_path_to_VINS_ThirdPartyLib_eigen3
+
+		To build with GCC:
+
+			mkdir build_linu && cd build_linux
+
+			cmake -DEIGEN_DIRS=${EIGEN_DIRS} -DMINIGLOG=ON -DSUITESPARSE=OFF -DLAPACK=OFF -DOPENMP=OFF -DCXX11=ON 
+				-DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=./install ..
+
+		To build with Clang:
+
+			mkdir build_clang && cd build_clang
+
+			cmake -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ -DEIGEN_DIRS=${EIGEN_DIRS} 
+				-DMINIGLOG=ON -DSUITESPARSE=OFF -DLAPACK=OFF -DOPENMP=OFF -DCXX11=ON 
+				-DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=./install ..
+		
+		make 
+
+		make install
+
+	2. Prepare Boost and OpenCV
+
+		Suppose Boost directory structure is:
+
+			boost_1_63_0
+					|
+					|---- install
+					|		|
+					|		|---- include 
+					|		|
+					|		|---- lib
+					|
+					|---- install_clang
+							|
+							|---- include 
+							|
+							|---- lib
+
+		OpenCV directory structure is:
+
+			opencv
+				|
+				|---- release
+				|		|
+				|		|---- install
+				|				|
+				|				|---- bin
+				|				|
+				|				|---- include
+				|				|
+				|				|---- lib
+				|				|
+				|				|---- share
+				|
+				|---- release_clang
+						|
+						|---- install
+								|
+								|---- bin
+								|
+								|---- include
+								|
+								|---- lib
+								|
+								|---- share		
+
+		To build with GCC:
+
+			export BOOST_DIR=absolute_path_to_boost_1_63_0/install/
+
+			export OPENCV_DIR=absolute_path_to_opencv/release/install/
+
+		To build with Clang:
+
+			export BOOST_DIR=absolute_path_to_boost_1_63_0/install_clang/
+
+			export OPENCV_DIR=absolute_path_to_opencv/release_clang/install/
+
+	3. Build VINS-Mobile library and test executable
+
+		cd VINS-Mobile
+
+		To build with GCC:
+
+			mkdir build_linux && cd build_linux 
+
+			cmake -DCMAKE_BUILD_TYPE=Release -DBOOST_DIR=${BOOST_DIR} -DOPENCV_DIR=${OPENCV_DIR} ..
+
+		To build with Clang:
+
+			mkdir builc_clang && cd build_clang
+
+			cmake -DCMAKE_C_COMPILER=/usr/bin/clang -DCMAKE_CXX_COMPILER=/usr/bin/clang++ 
+				-DCMAKE_BUILD_TYPE=Release -DBOOST_DIR=${BOOST_DIR} -DOPENCV_DIR=${OPENCV_DIR} .. 
+
+		make 
+
 **27 Jun 2017**: We upgrade the pose outputs and AR rendering to 30 Hz by motion-only 3D tracking in front-end and improve the loop-closure procedure(See our [technical report](https://github.com/HKUST-Aerial-Robotics/VINS-Mono/blob/master/support_files/paper/tro_technical_report.pdf) for detail).
 
 **22 May 2017**:  **VINS-Mono: A Robust and Versatile Monocular Visual-Inertial State Estimator** is released. It is the **Linux** version and is fully integrated with **ROS**. Available at: [link](https://github.com/HKUST-Aerial-Robotics/VINS-Mono)
