@@ -251,7 +251,7 @@ private:
 	void globalOptimization();
 
 	// Send imu data and visual data into VINS
-	std::vector<std::pair<std::vector<ImuConstPtr>, ImgConstPtr> > getMeasurements();
+	void getMeasurements(std::vector<std::pair<std::vector<ImuConstPtr>, ImgConstPtr> >& measurements);
 
 	void sendImu(const ImuConstPtr &imu_msg);
 

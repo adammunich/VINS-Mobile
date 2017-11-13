@@ -174,18 +174,16 @@ void VinsSystem::globalOptimization() {
 
 }
 
-std::vector<std::pair<std::vector<ImuConstPtr>, ImgConstPtr> > 
-	VinsSystem::getMeasurements() {
-		std::vector<std::pair<std::vector<ImuConstPtr>, ImgConstPtr> > measurements;
+void VinsSystem::getMeasurements(std::vector<std::pair<std::vector<ImuConstPtr>, ImgConstPtr> >& measurements) {
 		while (true)
 		{
 			if (imu_msg_buf.empty() || img_msg_buf.empty())
-				return measurements;
+				return;
 
 			if (!(imu_msg_buf.back()->header > img_msg_buf.front()->header))
 			{
 				printf("wait for imu, only should happen at the beginning\n");
-				return measurements;
+				return;
 			}
 
 			if (!(imu_msg_buf.front()->header < img_msg_buf.front()->header))
@@ -206,7 +204,7 @@ std::vector<std::pair<std::vector<ImuConstPtr>, ImgConstPtr> >
 			//printf("IMU_buf = %d\n", IMUs.size());
 			measurements.emplace_back(IMUs, img_msg);
 		}
-		return measurements;
+		return;
 }
 
 void VinsSystem::sendImu(const ImuConstPtr &imu_msg) {
@@ -232,12 +230,14 @@ void VinsSystem::sendImu(const ImuConstPtr &imu_msg) {
 }
 
 void VinsSystem::fusion() {
+	std::vector<std::pair<std::vector<ImuConstPtr>, ImgConstPtr> > measurements;
 	while (is_vins_running) {
-		std::vector<std::pair<std::vector<ImuConstPtr>, ImgConstPtr>> measurements;
+		measurements.clear();
 		std::unique_lock<std::mutex> lk(m_buf);
 		con.wait(lk, [&]
 		{
-			return (measurements = getMeasurements()).size() != 0;
+			getMeasurements(measurements);
+			return measurements.size() != 0;
 		});
 		lk.unlock();
 		waiting_lists = measurements.size();
