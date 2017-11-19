@@ -144,4 +144,5 @@ bool setGlobalParam(double focal_length_x, double focal_length_y,
     TIC_Z = tic_z;
     SOLVER_TIME = solver_time;
     FREQ = freq;
+    return true;
 }
