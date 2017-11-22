@@ -20,6 +20,13 @@ int FREQ;
 double TIC_X;
 double TIC_Y;
 double TIC_Z;
+double RIC_y;
+double RIC_p;
+double RIC_r;
+double ACC_N;
+double ACC_W;
+double GYR_N;
+double GYR_W;
 
 bool setGlobalParam(DeviceType device)
 {
@@ -133,7 +140,8 @@ bool setGlobalParam(DeviceType device)
 
 bool setGlobalParam(double focal_length_x, double focal_length_y,
     double px, double py, double tic_x, double tic_y, double tic_z,
-    double solver_time, int freq)
+    double ric_y, double ric_p, double ric_r, double acc_n, double acc_w,
+    double gyr_n, double gyr_w, double solver_time, int freq)
 {
     FOCUS_LENGTH_X = focal_length_x;
     FOCUS_LENGTH_Y = focal_length_y;
@@ -142,6 +150,13 @@ bool setGlobalParam(double focal_length_x, double focal_length_y,
     TIC_X = tic_x;
     TIC_Y = tic_y;
     TIC_Z = tic_z;
+    RIC_y = ric_y;
+    RIC_p = ric_p;
+    RIC_r = ric_r;
+    ACC_N = acc_n;
+    ACC_W = acc_w;
+    GYR_N = gyr_n;
+    GYR_W = gyr_w;
     SOLVER_TIME = solver_time;
     FREQ = freq;
 }
