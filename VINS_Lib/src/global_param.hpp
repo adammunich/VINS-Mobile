@@ -19,10 +19,7 @@ enum DeviceType
     iPadPro129,
     unDefine
 };
-//extrinsic param
-#define RIC_y ((double)0.0)
-#define RIC_p ((double)0.0)
-#define RIC_r ((double)180.0)
+
 #define MIN_LOOP_NUM 22
 #define LOOP_FREQ 3
 #define WINDOW_SIZE 10
@@ -40,10 +37,6 @@ enum DeviceType
 #define C_PI 3.1415926
 
 #define GRAVITY ((double)9.805)
-#define ACC_N ((double)0.5)  //0.02
-#define ACC_W ((double)0.002)
-#define GYR_N ((double)0.2)  //0.02
-#define GYR_W ((double)4.0e-5)
 #define BIAS_ACC_THRESHOLD ((double)0.5)
 #define BIAS_GYR_THRESHOLD ((double)0.1)
 #define G_THRESHOLD ((double)3.0)
@@ -63,6 +56,13 @@ extern int FREQ;
 extern double TIC_X;
 extern double TIC_Y;
 extern double TIC_Z;
+extern double RIC_y;
+extern double RIC_p;
+extern double RIC_r;
+extern double ACC_N;
+extern double ACC_W;
+extern double GYR_N;
+extern double GYR_W;
 /* IMU
  Z^
  |   /Y
@@ -83,6 +83,8 @@ enum StateOrder
 bool setGlobalParam(DeviceType device);
 bool setGlobalParam(double focal_length_x, double focal_length_y,
                     double px, double py, double tic_x, double tic_y, double tic_z,
+                    double ric_y, double ric_p, double ric_r, 
+                    double acc_n, double acc_w, double gyr_n, double gyr_w,
                     double solver_time, int freq);
 
 #if 1
