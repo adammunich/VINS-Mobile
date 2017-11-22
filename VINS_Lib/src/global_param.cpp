@@ -159,4 +159,5 @@ bool setGlobalParam(double focal_length_x, double focal_length_y,
     GYR_W = gyr_w;
     SOLVER_TIME = solver_time;
     FREQ = freq;
+    return true;
 }

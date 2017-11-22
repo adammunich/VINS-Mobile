@@ -60,6 +60,40 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
 			${PROJECT_SOURCE_DIR}/VINS_ThirdPartyLib/ceres-solver/build_clang/install/lib/libceres.so
 		)
     endif ()
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+	message("Build VINS-Mobile MacOS ...")
+
+	set(CMAKE_MACOSX_RPATH 1)
+
+	set (CMAKE_CXX_STANDARD 11)
+
+	set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/libs/macos)
+
+	set(BOOST_INCLUDE_DIR ${BOOST_DIR}/include/)
+
+	set(BOOST_LIBS 
+		${BOOST_DIR}/lib/libboost_system.a
+		${BOOST_DIR}/lib/libboost_thread.a
+		${BOOST_DIR}/lib/libboost_filesystem.a
+	)
+
+	set(OpenCV_INCLUDE_DIR ${OPENCV_DIR}/include/)
+
+	set(OpenCV_LIBS 
+		${OPENCV_DIR}/lib/libopencv_calib3d.dylib
+		${OPENCV_DIR}/lib/libopencv_core.dylib
+		${OPENCV_DIR}/lib/libopencv_highgui.dylib
+		${OPENCV_DIR}/lib/libopencv_imgcodecs.dylib
+		${OPENCV_DIR}/lib/libopencv_imgproc.dylib
+		${OPENCV_DIR}/lib/libopencv_features2d.dylib
+		${OPENCV_DIR}/lib/libopencv_video.dylib
+		${OPENCV_DIR}/lib/libopencv_videostab.dylib
+		${OPENCV_DIR}/lib/libopencv_videoio.dylib
+	)
+
+	set(CERES_LIBS 
+		${PROJECT_SOURCE_DIR}/VINS_ThirdPartyLib/ceres-solver/build_macos/install/lib/libceres.dylib
+	)
 endif()
 
 
@@ -115,6 +149,12 @@ include_directories(
 
 # build shared library.
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+	add_library(${PROJECT_NAME} SHARED ${VINS_SOURCE_FILES})
+	target_link_libraries(${PROJECT_NAME} ${CERES_LIBS} ${OpenCV_LIBS} ${BOOST_LIBS})
+
+	add_executable(test_vins_dataset ${PROJECT_SOURCE_DIR}/src/test_vins_dataset.cpp)
+	target_link_libraries(test_vins_dataset ${PROJECT_NAME} ${BOOST_LIBS} ${CERES_LIBS} ${OpenCV_LIBS})
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 	add_library(${PROJECT_NAME} SHARED ${VINS_SOURCE_FILES})
 	target_link_libraries(${PROJECT_NAME} ${CERES_LIBS} ${OpenCV_LIBS} ${BOOST_LIBS})
 
