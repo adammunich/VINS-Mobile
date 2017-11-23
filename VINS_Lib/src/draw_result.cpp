@@ -16,7 +16,7 @@ DrawResult::DrawResult(float _pitch, float _roll, float _yaw, float _Tx, float _
     initPoint.setZero();
     Fx = 400;
     Fy = 400;
-    radius = 5.0;
+    radius = 10.0;
     radiusAR = 20.0;
     theta = 30;
     thetaAR = 30;
