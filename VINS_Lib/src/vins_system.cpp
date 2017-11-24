@@ -12,7 +12,9 @@ VinsSystem::VinsSystem(const char* voc_file_path,
 			548.813, 549.477,
 			238.520, 320.379,
 			0.0, 0.065, 0.0,
-			0.06, 3
+			0.0, 0.0, 180.0,
+			0.5, 0.002, 0.2, 4.0e-5,
+                        0.06, 3
 		};
 
 		readVinsConfigFile(vins_params, config_file);
@@ -20,6 +22,8 @@ VinsSystem::VinsSystem(const char* voc_file_path,
 		setGlobalParam(vins_params.focal_length_x, vins_params.focal_length_y,
 						vins_params.px, vins_params.py,
 						vins_params.tic_x, vins_params.tic_y, vins_params.tic_z,
+                                                vins_params.ric_y, vins_params.ric_p, vins_params.ric_r,
+						vins_params.acc_n, vins_params.acc_w, vins_params.gyr_n, vins_params.gyr_w,
 						vins_params.solver_time, vins_params.freq);
 
 		feature_tracker = new FeatureTracker(vins_params.frame_width, vins_params.frame_height);
@@ -444,13 +448,15 @@ void VinsSystem::readVinsConfigFile(VINS_PARAMS &params, const char *params_file
 
 		printf("Found VINS config file\n");
 
-		std::string l1, l2, l3, l4;
+		std::string l1, l2, l3, l4, l5, l6;
 		std::getline(params_file, l1);
 		std::getline(params_file, l2);
 		std::getline(params_file, l3);
 		std::getline(params_file, l4);
+                std::getline(params_file, l5);
+		std::getline(params_file, l6);
 
-		float intrinsics[4], extrinsics[3];
+		float intrinsics[4], extrinsics[10];
 		float input_solver_time;
 		int input_freq, input_frame_width, input_frame_height;
 		// line 1: fx, fy, cx, cy
@@ -489,8 +495,33 @@ void VinsSystem::readVinsConfigFile(VINS_PARAMS &params, const char *params_file
 			params.tic_z = extrinsics[2];
 
 		}
-		// line 4: width, height
-		if (std::sscanf(l4.c_str(), "%d %d",
+                // line 4: ric_y, ric_p, ric_r
+		if (std::sscanf(l4.c_str(), "%f %f %f",
+				&extrinsics[3], &extrinsics[4], &extrinsics[5]) == 3) {
+
+			printf("Found VINS params ric_y: %.3f, ric_p: %.3f, ric_r: %.3f\n",
+					extrinsics[3], extrinsics[4], extrinsics[5]);
+
+			params.ric_y = extrinsics[3];
+			params.ric_p = extrinsics[4];
+			params.ric_r = extrinsics[5];
+
+		}
+		// line 5: acc_n, acc_w, gyr_n, gyr_w
+		if (std::sscanf(l5.c_str(), "%f %f %f %f",
+				&extrinsics[6], &extrinsics[7], &extrinsics[8], &extrinsics[9]) == 4) {
+
+			printf("Found VINS params acc_n: %.3f, acc_w: %.3f, gyr_n: %.3f, gyr_w: %.3f\n",
+					extrinsics[6], extrinsics[7], extrinsics[8], extrinsics[9]);
+
+			params.acc_n = extrinsics[6];
+			params.acc_w = extrinsics[7];
+			params.gyr_n = extrinsics[8];
+			params.gyr_w = extrinsics[9];
+
+		}
+		// line 6: width, height
+		if (std::sscanf(l6.c_str(), "%d %d",
 				&input_frame_width, &input_frame_height) == 2) {
 
 			printf("Found VINS params width: %d, height: %d\n",
@@ -733,6 +764,12 @@ void VinsSystem::getVinsStatus(VINS_STATUS& vins_status) {
 		vins_status.parallax = vins->parallax_num_view;
 
 		vins_status.init_progress = vins->initProgress;
+
+                vins_status.x_view = 0.0f;
+
+		vins_status.y_view = 0.0f;
+
+		vins_status.z_view = 0.0f;
 	}
 	else
 	{

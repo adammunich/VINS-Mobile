@@ -58,6 +58,13 @@ struct VINS_PARAMS {
 	double tic_x; 
 	double tic_y;
 	double tic_z;
+        double ric_y;
+	double ric_p;
+	double ric_r;
+	double acc_n;
+	double acc_w;
+	double gyr_n;
+	double gyr_w;
 	double solver_time;
 	int freq;
 };
