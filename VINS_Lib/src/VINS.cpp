@@ -59,6 +59,8 @@ void VINS::clearState()
     TIC_Y,
     TIC_Z;
     ric = Utility::ypr2R(Vector3d(RIC_y,RIC_p,RIC_r));
+    std::cout << "extrinsic t: " << tic << std::endl;
+    std::cout << "extrinsic r: " << ric << std::endl;
     
     frame_count = 0;
     first_imu = false;
@@ -236,7 +238,9 @@ bool VINS::failureDetection()
     Vector3d tmp_P = Ps[WINDOW_SIZE];
     if ((tmp_P - last_P).norm() > 1)
     {
-        printf("failure big translation\n");
+        std::cout << "tmp_P: " << tmp_P << std::endl;
+        std::cout << "last_P: " << last_P << std::endl;
+        printf("failure big translation: norm = %lf\n", (tmp_P - last_P).norm());
         is_failure = true;
     }
     if (abs(tmp_P.z() - last_P.z()) > 0.5)

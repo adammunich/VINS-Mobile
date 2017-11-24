@@ -12,6 +12,8 @@ VinsSystem::VinsSystem(const char* voc_file_path,
 			548.813, 549.477,
 			238.520, 320.379,
 			0.0, 0.065, 0.0,
+			0.0, 0.0, 180.0,
+			0.5, 0.002, 0.2, 4.0e-5,
 			0.06, 3
 		};
 
@@ -20,6 +22,8 @@ VinsSystem::VinsSystem(const char* voc_file_path,
 		setGlobalParam(vins_params.focal_length_x, vins_params.focal_length_y,
 						vins_params.px, vins_params.py,
 						vins_params.tic_x, vins_params.tic_y, vins_params.tic_z,
+						vins_params.ric_y, vins_params.ric_p, vins_params.ric_r,
+						vins_params.acc_n, vins_params.acc_w, vins_params.gyr_n, vins_params.gyr_w,
 						vins_params.solver_time, vins_params.freq);
 
 		feature_tracker = new FeatureTracker(vins_params.frame_width, vins_params.frame_height);
@@ -45,8 +49,6 @@ VinsSystem::VinsSystem(const char* voc_file_path,
 		}
 
 		fusion_thread = boost::thread(&VinsSystem::fusion, this);
-
-		cur_acc = std::shared_ptr<IMU_MSG>(new IMU_MSG());
 
 		is_vins_running = true;
 
@@ -174,31 +176,33 @@ void VinsSystem::globalOptimization() {
 
 }
 
-void VinsSystem::getMeasurements(std::vector<std::pair<std::vector<ImuConstPtr>, ImgConstPtr> >& measurements) {
+void VinsSystem::getMeasurements(std::vector<std::pair<std::vector<IMU_MSG>, IMG_MSG> >& measurements) {
 		while (true)
 		{
 			if (imu_msg_buf.empty() || img_msg_buf.empty())
 				return;
 
-			if (!(imu_msg_buf.back()->header > img_msg_buf.front()->header))
+			if (!(imu_msg_buf.back().header > img_msg_buf.front().header))
 			{
 				printf("wait for imu, only should happen at the beginning\n");
 				return;
 			}
 
-			if (!(imu_msg_buf.front()->header < img_msg_buf.front()->header))
+			if (!(imu_msg_buf.front().header < img_msg_buf.front().header))
 			{
 				printf("throw img, only should happen at the beginning\n");
 				img_msg_buf.pop();
 				continue;
 			}
-			ImgConstPtr img_msg = img_msg_buf.front();
+
+			IMG_MSG img_msg = img_msg_buf.front();
+			
 			img_msg_buf.pop();
 
-			std::vector<ImuConstPtr> IMUs;
-			while (imu_msg_buf.front()->header <= img_msg->header)
+			std::vector<IMU_MSG> IMUs;
+			while (imu_msg_buf.front().header <= img_msg.header)
 			{
-				IMUs.emplace_back(imu_msg_buf.front());
+				IMUs.push_back(imu_msg_buf.front());
 				imu_msg_buf.pop();
 			}
 			//printf("IMU_buf = %d\n", IMUs.size());
@@ -207,8 +211,8 @@ void VinsSystem::getMeasurements(std::vector<std::pair<std::vector<ImuConstPtr>,
 		return;
 }
 
-void VinsSystem::sendImu(const ImuConstPtr &imu_msg) {
-	double t = imu_msg->header;
+void VinsSystem::sendImu(IMU_MSG &imu_msg) {
+	double t = imu_msg.header;
 	if (current_time < 0)
 		current_time = t;
 	double dt = (t - current_time);
@@ -217,20 +221,20 @@ void VinsSystem::sendImu(const ImuConstPtr &imu_msg) {
 	double ba[]{0.0, 0.0, 0.0};
 	double bg[]{0.0, 0.0, 0.0};
 
-	double dx = imu_msg->acc.x() - ba[0];
-	double dy = imu_msg->acc.y() - ba[1];
-	double dz = imu_msg->acc.z() - ba[2];
+	double dx = imu_msg.acc.x() - ba[0];
+	double dy = imu_msg.acc.y() - ba[1];
+	double dz = imu_msg.acc.z() - ba[2];
 
-	double rx = imu_msg->gyr.x() - bg[0];
-	double ry = imu_msg->gyr.y() - bg[1];
-	double rz = imu_msg->gyr.z() - bg[2];
+	double rx = imu_msg.gyr.x() - bg[0];
+	double ry = imu_msg.gyr.y() - bg[1];
+	double rz = imu_msg.gyr.z() - bg[2];
 	//printf("IMU %f, dt: %f, acc: %f %f %f, gyr: %f %f %f\n", t, dt, dx, dy, dz, rx, ry, rz);
 
 	vins->processIMU(dt, Vector3d(dx, dy, dz), Vector3d(rx, ry, rz));
 }
 
 void VinsSystem::fusion() {
-	std::vector<std::pair<std::vector<ImuConstPtr>, ImgConstPtr> > measurements;
+	std::vector<std::pair<std::vector<IMU_MSG>, IMG_MSG> > measurements;
 	while (is_vins_running) {
 		measurements.clear();
 		std::unique_lock<std::mutex> lk(m_buf);
@@ -250,8 +254,8 @@ void VinsSystem::fusion() {
 			}
 
 			auto img_msg = measurement.second;
-			map<int, Vector3d> image = img_msg->point_clouds;
-			double header = img_msg->header;
+			map<int, Vector3d> image = img_msg.point_clouds;
+			double header = img_msg.header;
 			TS(process_image);
 			vins->processImage(image, header, waiting_lists);
 			TE(process_image);
@@ -412,12 +416,12 @@ void VinsSystem::fusion() {
 	}
 }
 
-std::vector<IMU_MSG_LOCAL> VinsSystem::getImuMeasurements(double header) {
-	std::vector<IMU_MSG_LOCAL> imu_measurements;
+void VinsSystem::getImuMeasurements(double header, std::vector<IMU_MSG_LOCAL>& imu_measurements) {
+	imu_measurements.clear();
 	static double last_header = -1;
 	if (last_header < 0 || local_imu_msg_buf.empty()) {
 		last_header = header;
-		return imu_measurements;
+		return;
 	}
 
 	while (!local_imu_msg_buf.empty() && local_imu_msg_buf.front().header <= last_header) {
@@ -429,7 +433,6 @@ std::vector<IMU_MSG_LOCAL> VinsSystem::getImuMeasurements(double header) {
 		local_imu_msg_buf.pop();
 	}
 	last_header = header;
-	return imu_measurements;    
 }
 
 void VinsSystem::readVinsConfigFile(VINS_PARAMS &params, const char *params_file_path) {
@@ -444,13 +447,15 @@ void VinsSystem::readVinsConfigFile(VINS_PARAMS &params, const char *params_file
 
 		printf("Found VINS config file\n");
 
-		std::string l1, l2, l3, l4;
+		std::string l1, l2, l3, l4, l5, l6;
 		std::getline(params_file, l1);
 		std::getline(params_file, l2);
 		std::getline(params_file, l3);
 		std::getline(params_file, l4);
+		std::getline(params_file, l5);
+		std::getline(params_file, l6);
 
-		float intrinsics[4], extrinsics[3];
+		float intrinsics[4], extrinsics[10];
 		float input_solver_time;
 		int input_freq, input_frame_width, input_frame_height;
 		// line 1: fx, fy, cx, cy
@@ -489,8 +494,33 @@ void VinsSystem::readVinsConfigFile(VINS_PARAMS &params, const char *params_file
 			params.tic_z = extrinsics[2];
 
 		}
-		// line 4: width, height
-		if (std::sscanf(l4.c_str(), "%d %d",
+		// line 4: ric_y, ric_p, ric_r
+		if (std::sscanf(l4.c_str(), "%f %f %f",
+				&extrinsics[3], &extrinsics[4], &extrinsics[5]) == 3) {
+
+			printf("Found VINS params ric_y: %.3f, ric_p: %.3f, ric_r: %.3f\n",
+					extrinsics[3], extrinsics[4], extrinsics[5]);
+
+			params.ric_y = extrinsics[3];
+			params.ric_p = extrinsics[4];
+			params.ric_r = extrinsics[5];
+
+		}
+		// line 5: acc_n, acc_w, gyr_n, gyr_w
+		if (std::sscanf(l5.c_str(), "%f %f %f %f",
+				&extrinsics[6], &extrinsics[7], &extrinsics[8], &extrinsics[9]) == 4) {
+
+			printf("Found VINS params acc_n: %.3f, acc_w: %.3f, gyr_n: %.3f, gyr_w: %.3f\n",
+					extrinsics[6], extrinsics[7], extrinsics[8], extrinsics[9]);
+
+			params.acc_n = extrinsics[6];
+			params.acc_w = extrinsics[7];
+			params.gyr_n = extrinsics[8];
+			params.gyr_w = extrinsics[9];
+
+		}
+		// line 6: width, height
+		if (std::sscanf(l6.c_str(), "%d %d",
 				&input_frame_width, &input_frame_height) == 2) {
 
 			printf("Found VINS params width: %d, height: %d\n",
@@ -510,12 +540,10 @@ void VinsSystem::putAccelData(double imu_timestamp, double accel_x, double accel
 	if (imu_prepare < 10) {
 		imu_prepare++;
 	}
-	shared_ptr<IMU_MSG> acc_msg(new IMU_MSG());
-	acc_msg->header = imu_timestamp;
-	acc_msg->acc << accel_x,
+	cur_acc.header = imu_timestamp;
+	cur_acc.acc << accel_x,
 		accel_y,
 		accel_z;
-	cur_acc = acc_msg;
 }
 
 void VinsSystem::putGyroData(double imu_timestamp, double gyro_x, double gyro_y, double gyro_z) {
@@ -543,25 +571,25 @@ void VinsSystem::putGyroData(double imu_timestamp, double gyro_x, double gyro_y,
 		gyro_buf[1] = gyro_msg;
 	}
 	//interpolation
-	shared_ptr<IMU_MSG> imu_msg(new IMU_MSG());
-	if(cur_acc->header >= gyro_buf[0].header && cur_acc->header <= gyro_buf[1].header) {
-		imu_msg->header = cur_acc->header;
-		imu_msg->acc = cur_acc->acc;
-		imu_msg->gyr = gyro_buf[0].gyr + (cur_acc->header - gyro_buf[0].header)*(gyro_buf[1].gyr - gyro_buf[0].gyr)/(gyro_buf[1].header - gyro_buf[0].header);
+	IMU_MSG imu_msg;
+	if(cur_acc.header >= gyro_buf[0].header && cur_acc.header <= gyro_buf[1].header) {
+		imu_msg.header = cur_acc.header;
+		imu_msg.acc = cur_acc.acc;
+		imu_msg.gyr = gyro_buf[0].gyr + (cur_acc.header - gyro_buf[0].header)*(gyro_buf[1].gyr - gyro_buf[0].gyr)/(gyro_buf[1].header - gyro_buf[0].header);
 		//printf("imu gyro update %lf %lf %lf\n", gyro_buf[0].header, imu_msg->header, gyro_buf[1].header);
 		//printf("imu inte update %lf %lf %lf %lf\n", imu_msg->header, gyro_buf[0].gyr.x(), imu_msg->gyr.x(), gyro_buf[1].gyr.x());
 	} else {
-		printf("imu error %lf %lf %lf\n", gyro_buf[0].header, cur_acc->header, gyro_buf[1].header);
+		printf("imu error %lf %lf %lf\n", gyro_buf[0].header, cur_acc.header, gyro_buf[1].header);
 		return;
 	}
 
-	lateast_imu_time = imu_msg->header;
+	lateast_imu_time = imu_msg.header;
 
 	//img_msg callback
 	IMU_MSG_LOCAL imu_msg_local;
-	imu_msg_local.header = imu_msg->header;
-	imu_msg_local.acc = imu_msg->acc;
-	imu_msg_local.gyr = imu_msg->gyr;
+	imu_msg_local.header = imu_msg.header;
+	imu_msg_local.acc = imu_msg.acc;
+	imu_msg_local.gyr = imu_msg.gyr;
 
 	m_imu_feedback.lock();
 	local_imu_msg_buf.push(imu_msg_local);
@@ -577,7 +605,7 @@ void VinsSystem::processFrame(double img_timestamp, cv::Mat& input_frame) {
 	if (!input_frame.empty())
 	{
 		//printf("processFrame\n");
-		shared_ptr<IMG_MSG> img_msg(new IMG_MSG());
+		IMG_MSG img_msg;
 
 		if (lateast_imu_time <= 0) {
 			cv::cvtColor(input_frame, input_frame, CV_BGRA2RGB);
@@ -585,7 +613,7 @@ void VinsSystem::processFrame(double img_timestamp, cv::Mat& input_frame) {
 			return;
 		}
 
-		img_msg->header = img_timestamp;
+		img_msg.header = img_timestamp;
 		bool isNeedRotation = false; //input_frame.size() != frameSize;
 
 		cv::Mat gray;
@@ -604,20 +632,20 @@ void VinsSystem::processFrame(double img_timestamp, cv::Mat& input_frame) {
 		m_depth_feedback.unlock();
 
 		m_imu_feedback.lock();
-		feature_tracker->imu_msgs = getImuMeasurements(img_msg->header);
+		getImuMeasurements(img_timestamp, feature_tracker->imu_msgs);
 		m_imu_feedback.unlock();
 
 		good_pts.clear();
 		track_len.clear();
 		vins_normal = (vins->solver_flag == VINS::SolverFlag::NON_LINEAR);
 		feature_tracker->use_pnp = USE_PNP;
-		feature_tracker->readImage(img_equa, img_with_feature, frame_cnt, good_pts, track_len, img_msg->header, pnp_P, pnp_R, vins_normal);
+		feature_tracker->readImage(img_equa, img_with_feature, frame_cnt, good_pts, track_len, img_timestamp, pnp_P, pnp_R, vins_normal);
 		TE(time_feature);
 		//cvtColor(img_equa, img_equa, CV_GRAY2BGR);
 
 		//image msg buf
 		if (feature_tracker->img_cnt == 0) {
-			img_msg->point_clouds = feature_tracker->image_msg;
+			img_msg.point_clouds = feature_tracker->image_msg;
 			//img_msg callback
 			m_buf.lock();
 			img_msg_buf.push(img_msg);
@@ -625,7 +653,7 @@ void VinsSystem::processFrame(double img_timestamp, cv::Mat& input_frame) {
 			m_buf.unlock();
 			con.notify_one();
 			if (imageCacheEnabled) {
-				image_data_cache.header = img_msg->header;
+				image_data_cache.header = img_timestamp;
 				image_data_cache.image = input_frame;
 				image_pool.push(image_data_cache);
 			}
@@ -633,7 +661,7 @@ void VinsSystem::processFrame(double img_timestamp, cv::Mat& input_frame) {
 			if (LOOP_CLOSURE) {
 				m_image_buf_loop.lock();
 				cv::Mat loop_image = gray.clone();
-				image_buf_loop.push(make_pair(loop_image, img_msg->header));
+				image_buf_loop.push(make_pair(loop_image, img_timestamp));
 				if(image_buf_loop.size() > WINDOW_SIZE)
 					image_buf_loop.pop();
 				m_image_buf_loop.unlock();
@@ -733,6 +761,12 @@ void VinsSystem::getVinsStatus(VINS_STATUS& vins_status) {
 		vins_status.parallax = vins->parallax_num_view;
 
 		vins_status.init_progress = vins->initProgress;
+
+		vins_status.x_view = 0.0f;
+
+		vins_status.y_view = 0.0f;
+
+		vins_status.z_view = 0.0f;
 	}
 	else
 	{
