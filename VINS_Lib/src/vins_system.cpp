@@ -617,7 +617,18 @@ void VinsSystem::processFrame(double img_timestamp, cv::Mat& input_frame) {
 		bool isNeedRotation = false; //input_frame.size() != frameSize;
 
 		cv::Mat gray;
-		cv::cvtColor(input_frame, gray, CV_RGBA2GRAY);
+		if (input_frame.channels() == 4) // for mobile camera input 
+		{
+			cv::cvtColor(input_frame, gray, CV_RGBA2GRAY);
+		}
+		else if (input_frame.channels() == 3) // for dataset input
+		{
+			cv::cvtColor(input_frame, gray, CV_BGR2GRAY);
+		}
+		else 
+		{
+			gray = input_frame.clone();
+		}
 		cv::Mat img_with_feature;
 		cv::Mat img_equa;
 		cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
