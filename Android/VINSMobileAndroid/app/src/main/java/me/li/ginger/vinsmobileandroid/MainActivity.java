@@ -8,9 +8,14 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
+import android.os.SystemClock;
+import android.provider.Settings;
 import android.view.SurfaceView;
 import android.view.WindowManager;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.core.Mat;
@@ -18,12 +23,14 @@ import org.opencv.core.Mat;
 public class MainActivity extends Activity implements CameraBridgeViewBase.CvCameraViewListener2, SensorEventListener {
 
     private static final String TAG = "MainActivity";
+    private static final int INIT_FINISHED = 0x00010001;
     private CameraBridgeViewBase mOpenCvCameraView;
     private SensorManager mSensorManager;
     private Sensor mAccelSensor, mGyroSensor;
     private String mVocabularyFilePath, mPatternFilePath, mConfigFilePath;
     private volatile boolean isVinsRunning = false;
     private int firstNCameraFrames = 0;
+    private int prevImuDataType = Sensor.TYPE_GYROSCOPE;
 
     // Used to load the 'native-lib' library on application startup.
     static {
@@ -60,7 +67,8 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
         new Thread(new Runnable() {
             @Override
             public void run() {
-                initSystem();
+                initSystem(mVocabularyFilePath, mPatternFilePath, mConfigFilePath);
+                mHandler.sendEmptyMessage(INIT_FINISHED);
             }
         }).start();
 
@@ -74,11 +82,12 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
             switch (msg.what) {
                 case INIT_FINISHED:
                     isVinsRunning = true;
+                    Toast.makeText(MainActivity.this, "System Initialized", Toast.LENGTH_SHORT).show();
                     break;
             }
-            super.handlerMessage(msg);
+            super.handleMessage(msg);
         }
-    }
+    };
 
     @Override
     protected void onResume() {
@@ -109,12 +118,42 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
 
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
+
+        if (firstNCameraFrames < 30) {
+            firstNCameraFrames++;
+        } else {
+            if (isVinsRunning) {
+                double imgTimestamp = SystemClock.elapsedRealtime() / Math.pow(10, 9);
+                Mat mRgba = inputFrame.rgba();
+                processFrame(imgTimestamp, mRgba.getNativeObjAddr());
+                return mRgba;
+            }
+        }
+
         return inputFrame.rgba();
     }
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
+        Sensor sensor = sensorEvent.sensor;
 
+        if (sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+
+            if (prevImuDataType == Sensor.TYPE_GYROSCOPE) {
+                double accelTimestamp = SystemClock.elapsedRealtimeNanos() / Math.pow(10, 9);
+                putAccelData(accelTimestamp, sensorEvent.values[0], sensorEvent.values[1], sensorEvent.values[2]);
+                prevImuDataType = Sensor.TYPE_ACCELEROMETER;
+            }
+
+        } else if (sensor.getType() == Sensor.TYPE_GYROSCOPE) {
+
+            if (prevImuDataType == Sensor.TYPE_ACCELEROMETER) {
+                double gyroTimestamp = SystemClock.elapsedRealtimeNanos() / Math.pow(10, 9);
+                putGyroData(gyroTimestamp, sensorEvent.values[0], sensorEvent.values[1], sensorEvent.values[2]);
+                prevImuDataType = Sensor.TYPE_GYROSCOPE;
+            }
+
+        }
     }
 
     @Override
