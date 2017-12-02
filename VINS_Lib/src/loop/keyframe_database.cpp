@@ -7,6 +7,12 @@
 //
 
 #include "keyframe_database.h"
+
+#ifdef ANDROID
+#include <android/log.h>
+#define printf(x...) __android_log_print(ANDROID_LOG_DEBUG, "keyframe_database", x)
+#endif
+
 KeyFrameDatabase::KeyFrameDatabase()
 {
     earliest_loop_index = -1;
@@ -296,7 +302,7 @@ void KeyFrameDatabase::optimize4DoFLoopPoseGraph(int cur_index, Eigen::Vector3d 
     TS(t_global_loop);
     ceres::Solve(options, &problem, &summary);
     TE(t_global_loop);
-    std::cout << summary.BriefReport() << "\n";
+    printf("%s\n", summary.BriefReport().c_str());
     
     i = 0;
     int seg_index_cur, seg_index_old;

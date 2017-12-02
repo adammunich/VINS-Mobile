@@ -1,5 +1,10 @@
 #include "vins_system.hpp"
 
+#ifdef ANDROID
+#include <android/log.h>
+#define printf(x...) __android_log_print(ANDROID_LOG_DEBUG, "vins_system", x)
+#endif
+
 VinsSystem::VinsSystem(const char* voc_file_path, 
 						const char* pattern_file_path,
 						const char* config_file_path)
@@ -170,7 +175,7 @@ void VinsSystem::globalOptimization() {
 			vins->r_drift = loop_correct_r;
 			TE(global_optimization_thread);
 			boost::this_thread::sleep(boost::posix_time::milliseconds(1170));
-		}
+		} 
 		boost::this_thread::sleep(boost::posix_time::milliseconds(30));
 	}
 

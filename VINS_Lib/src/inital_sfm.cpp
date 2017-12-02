@@ -1,5 +1,10 @@
 #include "inital_sfm.hpp"
 
+#ifdef ANDROID
+#include <android/log.h>
+#define printf(x...) __android_log_print(ANDROID_LOG_DEBUG, "initial_sfm", x)
+#endif
+
 GlobalSFM::GlobalSFM(){}
 
 void GlobalSFM::triangulatePoint(Eigen::Matrix<double, 3, 4> &Pose0, Eigen::Matrix<double, 3, 4> &Pose1,
@@ -44,7 +49,7 @@ bool GlobalSFM::solveFrameByPnP(Matrix3d &R_initial, Vector3d &P_initial, int i,
     }
     if (int(pts_2_vector.size()) < 15)
     {
-        cout << "feature tracking not enough, please slowly move you device!" << endl;
+        printf("feature tracking not enough, please slowly move you device!\n");
         return false;
     }
     cv::Mat r, rvec, t, D, tmp_r;
@@ -56,7 +61,7 @@ bool GlobalSFM::solveFrameByPnP(Matrix3d &R_initial, Vector3d &P_initial, int i,
     pnp_succ = cv::solvePnP(pts_3_vector, pts_2_vector, K, D, rvec, t, 1);
     if(!pnp_succ)
     {
-        cout << "pnp failed !" << endl;
+        printf("pnp failed !\n");
         return false;
     }
     cv::Rodrigues(rvec, r);
@@ -183,7 +188,7 @@ bool GlobalSFM::construct(int frame_num, Quaterniond* q, Vector3d* T, int l,
     for (int i = l - 1; i >= 0; i--)
     {
         //solve pnp
-        cout << "solve pnp frame " << i << endl;
+        printf("solve pnp frame %d\n", i);
         Matrix3d R_initial = c_Rotation[i + 1];
         Vector3d P_initial = c_Translation[i + 1];
         solveFrameByPnP(R_initial, P_initial, i, sfm_f);
@@ -283,12 +288,12 @@ bool GlobalSFM::construct(int frame_num, Quaterniond* q, Vector3d* T, int l,
     options.max_solver_time_in_seconds = 0.3;
     ceres::Solver::Summary summary;
     ceres::Solve(options, &problem, &summary);
-    std::cout << summary.BriefReport() << "\n";
+    printf("%s\n", summary.BriefReport().c_str());
     if (summary.termination_type == ceres::CONVERGENCE || summary.final_cost < 3e-03)
-        cout << "vision only BA converge" << endl;
+        printf("vision only BA converge\n");
     else
     {
-        cout << "vision only BA not converge " << endl;
+        printf("vision only BA not converge\n");
         return false;
     }
     for (int i = 0; i < frame_num; i++)

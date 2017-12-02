@@ -8,6 +8,11 @@
 
 #include "draw_result.hpp"
 
+#ifdef ANDROID
+#include <android/log.h>
+#define printf(x...) __android_log_print(ANDROID_LOG_DEBUG, "draw_result", x)
+#endif
+
 DrawResult::DrawResult(float _pitch, float _roll, float _yaw, float _Tx, float _Ty, float _Tz)
 :pitch{_pitch},roll{_roll},yaw{_yaw},Tx{_Tx},Ty{_Ty},Tz{_Tz},change_view_manualy{false}
 {

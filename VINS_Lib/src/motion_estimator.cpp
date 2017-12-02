@@ -7,6 +7,12 @@
 //
 
 #include "motion_estimator.hpp"
+
+#ifdef ANDROID
+#include <android/log.h>
+#define printf(x...) __android_log_print(ANDROID_LOG_DEBUG, "motion_estimator", x)
+#endif
+
 /*
 namespace cv {
     void decomposeEssentialMat( InputArray _E, OutputArray _R1, OutputArray _R2, OutputArray _t )

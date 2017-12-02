@@ -1,5 +1,9 @@
 #include "keyframe.h"
 
+#ifdef ANDROID
+#include <android/log.h>
+#define printf(x...) __android_log_print(ANDROID_LOG_DEBUG, "keyframe", x)
+#endif
 
 KeyFrame::KeyFrame(double _header, int _global_index, Eigen::Vector3d _T_w_i, Eigen::Matrix3d _R_w_i,
                    cv::Mat &_image, const char *_brief_pattern_file, const int _segment_index)
@@ -235,12 +239,12 @@ bool KeyFrame::solveOldPoseByPnP(std::vector<cv::Point2f> &measurements_old_norm
     
     if(!pnp_succ)
     {
-        cout << "loop pnp failed !" << endl;
+        printf("loop pnp failed !\n");
         return false;
     }
     else
     {
-        cout << "loop pnp succ !" << endl;
+        printf("loop pnp succ !\n");
     }
     cv::Rodrigues(rvec, r);
     Matrix3d R_loop;
@@ -374,7 +378,7 @@ int KeyFrame::HammingDis(const BRIEF::bitset &a, const BRIEF::bitset &b)
     return dis;
 }
 
-BriefExtractor::BriefExtractor(const std::string &pattern_file)
+BriefExtractor::BriefExtractor(const char* pattern_file)
 {
     // The DVision::BRIEF extractor computes a random pattern by default when
     // the object is created.
@@ -382,8 +386,8 @@ BriefExtractor::BriefExtractor(const std::string &pattern_file)
     // the descriptors compatible with the predefined vocabulary
     
     // loads the pattern
-    cv::FileStorage fs(pattern_file.c_str(), cv::FileStorage::READ);
-    if(!fs.isOpened()) throw string("Could not open file ") + pattern_file;
+    cv::FileStorage fs(std::string(pattern_file), cv::FileStorage::READ);
+    if(!fs.isOpened()) throw string("Could not open file ") + std::string(pattern_file);
     
     vector<int> x1, y1, x2, y2;
     fs["x1"] >> x1;

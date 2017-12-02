@@ -8,6 +8,11 @@
 
 #include "VINS.hpp"
 
+#ifdef ANDROID
+#include <android/log.h>
+#define printf(x...) __android_log_print(ANDROID_LOG_DEBUG, "VINS", x)
+#endif
+
 bool LOOP_CLOSURE = true;
 
 VINS::VINS()

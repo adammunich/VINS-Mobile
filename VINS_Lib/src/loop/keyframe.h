@@ -22,7 +22,7 @@ class BriefExtractor: public FeatureExtractor<FBrief::TDescriptor>
 public:
     virtual void operator()(const cv::Mat &im, const std::vector<cv::Point2f> window_pts,
                             vector<cv::KeyPoint> &keys, vector<BRIEF::bitset> &descriptors) const;
-    BriefExtractor(const std::string &pattern_file);
+    BriefExtractor(const char* pattern_file);
     
 private:
     DVision::BRIEF m_brief;

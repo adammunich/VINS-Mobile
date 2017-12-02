@@ -7,6 +7,12 @@
 //
 
 #include "initial_aligment.hpp"
+
+#ifdef ANDROID
+#include <android/log.h>
+#define printf(x...) __android_log_print(ANDROID_LOG_DEBUG, "initial_aligment", x)
+#endif
+
 void solveGyroscopeBias(map<double, ImageFrame> &all_image_frame, Vector3d* Bgs)
 {
     Matrix3d A;
