@@ -87,3 +87,12 @@ freeline_project_description.json
 
 # OpenCV SDK
 *openCVLibrary*
+
+# Dependencies
+*include/OpenCV*
+*include/Boost*
+*include/Ceres*
+*include/Eigen*
+*include/ThirdParty*
+*include/VINS*
+jniLibs/
