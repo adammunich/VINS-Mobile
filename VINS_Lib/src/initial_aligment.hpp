@@ -10,7 +10,7 @@
 #define initial_aligment_hpp
 
 #include <stdio.h>
-#include <eigen3/Eigen/Dense>
+#include <Eigen/Dense>
 #include <iostream>
 #include "imu_factor.h"
 #include "utility.hpp"

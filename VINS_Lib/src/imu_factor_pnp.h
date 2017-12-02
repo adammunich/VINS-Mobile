@@ -10,7 +10,7 @@
 #define imu_factor_pnp_h
 
 #include <iostream>
-#include <eigen3/Eigen/Dense>
+#include <Eigen/Dense>
 #include "utility.hpp"
 #include "integration_base.h"
 #include "global_param.hpp"

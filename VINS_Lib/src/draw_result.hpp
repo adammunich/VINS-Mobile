@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <opencv2/opencv.hpp>
-#include <eigen3/Eigen/Dense>
+#include <Eigen/Dense>
 #include "utility.hpp"
 #include "global_param.hpp"
 #include "delaunay.h"

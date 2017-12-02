@@ -9,7 +9,7 @@
 #ifndef pose_local_parameterization_hpp
 #define pose_local_parameterization_hpp
 
-#include <eigen3/Eigen/Dense>
+#include <Eigen/Dense>
 #include <ceres/ceres.h>
 #include "utility.hpp"
 

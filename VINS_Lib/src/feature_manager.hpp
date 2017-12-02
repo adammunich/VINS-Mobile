@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include "feature_tracker.hpp"
-#include <eigen3/Eigen/Dense>
+#include <Eigen/Dense>
 #include "global_param.hpp"
 #include "utility.hpp"
 

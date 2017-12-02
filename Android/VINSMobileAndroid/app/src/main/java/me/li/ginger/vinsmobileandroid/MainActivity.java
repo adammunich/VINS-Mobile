@@ -169,9 +169,9 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
      * A native method that is implemented by the 'native-lib' native library,
      * which is packaged with this application.
      */
-    public static native void initSystem(String vocabularyFilePath, String patternFilePath, String configFilePath);
+    public native void initSystem(String vocabularyFilePath, String patternFilePath, String configFilePath);
 
-    public static native void processFrame(double imgTimestamp, long addrRgba);
+    public native void processFrame(double imgTimestamp, long addrRgba);
 
     public native void putAccelData(double accelTimestamp, double accelX, double accelY, double accelZ);
 
