@@ -14,7 +14,7 @@
 using namespace std;
 #include <opencv2/opencv.hpp>
 //#include <opencv2/core/eigen.hpp>
-#include <eigen3/Eigen/Dense>
+#include <Eigen/Dense>
 #include "utility.hpp"
 using namespace Eigen;
 

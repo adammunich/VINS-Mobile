@@ -8,6 +8,11 @@
 
 #include "marginalization_factor.hpp"
 
+#ifdef ANDROID
+#include <android/log.h>
+#define printf(x...) __android_log_print(ANDROID_LOG_DEBUG, "marginalization_factor", x)
+#endif
+
 void ResidualBlockInfo::Evaluate()
 {
     residuals.resize(cost_function->num_residuals());

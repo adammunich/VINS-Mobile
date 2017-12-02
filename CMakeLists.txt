@@ -94,6 +94,35 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 	set(CERES_LIBS 
 		${PROJECT_SOURCE_DIR}/VINS_ThirdPartyLib/ceres-solver/build_macos/install/lib/libceres.dylib
 	)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
+	message("Build VINS-Mobile Android ...")
+
+	add_definitions(-DANDROID)	
+
+	set(CMAKE_CXX_STANDARD 11)
+
+	set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/libs/android/armeabi-v7a)
+
+	set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+
+	set(BOOST_INCLUDE_DIR
+		${BOOST_DIR}/armeabi-v7a/include
+	)
+	
+	set(BOOST_LIBS 
+		${BOOST_DIR}/armeabi-v7a/lib/libboost_system.a
+		${BOOST_DIR}/armeabi-v7a/lib/libboost_thread.a
+	)
+	
+	set(OpenCV_INCLUDE_DIR ${OPENCV_DIR}/native/jni/include)
+	
+	set(OpenCV_LIBS
+		${OPENCV_DIR}/native/libs/armeabi-v7a/libopencv_java3.so
+	)
+		
+	set(CERES_LIBS
+		 ${PROJECT_SOURCE_DIR}/VINS_ThirdPartyLib/ceres-solver/obj/local/armeabi-v7a/libceres.a
+	)
 endif()
 
 
@@ -160,4 +189,7 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 
 	add_executable(test_vins_dataset ${PROJECT_SOURCE_DIR}/src/test_vins_dataset.cpp)
 	target_link_libraries(test_vins_dataset ${PROJECT_NAME} ${BOOST_LIBS} ${CERES_LIBS} ${OpenCV_LIBS})
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
+	add_library(${PROJECT_NAME} SHARED ${VINS_SOURCE_FILES})
+	target_link_libraries(${PROJECT_NAME} ${CERES_LIBS} ${OpenCV_LIBS} ${BOOST_LIBS} -llog)
 endif()

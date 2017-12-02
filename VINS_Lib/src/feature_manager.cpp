@@ -8,6 +8,11 @@
 
 #include "feature_manager.hpp"
 
+#ifdef ANDROID
+#include <android/log.h>
+#define printf(x...) __android_log_print(ANDROID_LOG_DEBUG, "feature_manager", x)
+#endif
+
 int FeaturePerId::endFrame()
 {
     return (int)(start_frame + feature_per_frame.size() - 1);

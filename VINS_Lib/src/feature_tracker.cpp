@@ -8,6 +8,11 @@
 
 #include "feature_tracker.hpp"
 
+#ifdef ANDROID
+#include <android/log.h>
+#define printf(x...) __android_log_print(ANDROID_LOG_DEBUG, "feature_tracker", x)
+#endif
+
 int FeatureTracker::n_id = 0;
 FeatureTracker::FeatureTracker(int frame_width, int frame_height)
     :m_frame_width_(frame_width), m_frame_height_(frame_height),

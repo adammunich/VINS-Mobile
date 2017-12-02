@@ -8,6 +8,11 @@
 
 #include "vins_pnp.hpp"
 
+#ifdef ANDROID
+#include <android/log.h>
+#define printf(x...) __android_log_print(ANDROID_LOG_DEBUG, "vins_pnp", x)
+#endif
+
 vinsPnP::vinsPnP()
 {
     printf("init VINS_pnp begins\n");

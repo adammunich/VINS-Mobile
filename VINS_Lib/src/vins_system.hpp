@@ -58,7 +58,7 @@ struct VINS_PARAMS {
 	double tic_x; 
 	double tic_y;
 	double tic_z;
-        double ric_y;
+	double ric_y;
 	double ric_p;
 	double ric_r;
 	double acc_n;
@@ -68,9 +68,6 @@ struct VINS_PARAMS {
 	double solver_time;
 	int freq;
 };
-
-typedef shared_ptr <IMU_MSG const > ImuConstPtr;
-typedef shared_ptr <IMG_MSG const > ImgConstPtr;
 
 class VinsSystem {
 public:
@@ -145,7 +142,7 @@ private:
 
 	Matrix3d pnp_R = Matrix3d::Zero();
 
-	shared_ptr<IMU_MSG> cur_acc = nullptr;
+	IMU_MSG cur_acc;
 
 	/******************************* UI CONFIG *******************************/
 
@@ -154,10 +151,10 @@ private:
 	VINS *vins = nullptr;
 
 	// Store the fesature data processed by featuretracker
-	queue<ImgConstPtr> img_msg_buf;
+	queue<IMG_MSG> img_msg_buf;
 
 	// Store the IMU data for vins
-	queue<ImuConstPtr> imu_msg_buf;
+	queue<IMU_MSG> imu_msg_buf;
 
 	// Store the IMU data for motion-only vins
 	queue<IMU_MSG_LOCAL> local_imu_msg_buf;
@@ -258,13 +255,13 @@ private:
 	void globalOptimization();
 
 	// Send imu data and visual data into VINS
-	void getMeasurements(std::vector<std::pair<std::vector<ImuConstPtr>, ImgConstPtr> >& measurements);
+	void getMeasurements(std::vector<std::pair<std::vector<IMU_MSG>, IMG_MSG> >& measurements);
 
-	void sendImu(const ImuConstPtr &imu_msg);
+	void sendImu(IMU_MSG &imu_msg);
 
 	void fusion();
 
-	std::vector<IMU_MSG_LOCAL> getImuMeasurements(double header);
+	void getImuMeasurements(double header, std::vector<IMU_MSG_LOCAL>& imu_measurements);
 
 	void readVinsConfigFile(VINS_PARAMS &params, const char *params_file_path);
 

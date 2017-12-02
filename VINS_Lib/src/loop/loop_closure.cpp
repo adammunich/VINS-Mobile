@@ -9,6 +9,11 @@
 // ----------------------------------------------------------------------------
 #include "loop_closure.h"
 
+#ifdef ANDROID
+#include <android/log.h>
+#define printf(x...) __android_log_print(ANDROID_LOG_DEBUG, "loop_closure", x)
+#endif
+
 LoopClosure::LoopClosure(const char *_voc_file, int _image_w, int _image_h)
 :demo(_voc_file,_image_w, _image_h), IMAGE_W(_image_w), IMAGE_H(_image_h) 
 {
@@ -30,7 +35,7 @@ bool LoopClosure::startLoopClosure(std::vector<cv::KeyPoint> &keys, std::vector<
   }
   catch(const std::string &ex)
   {
-    cout << "Error loop: " << ex << endl;
+    printf("Error loop: %s\n", ex.c_str());
     return false;
   }
 }
