@@ -6,7 +6,7 @@
 #include "opencv2/opencv.hpp"
 #include "vins_system.hpp"
 
-#define printf(x...) __android_log_print(ANDROID_LOG_DEBUG, "native-lib", x)
+#define printf(x...) __android_log_print(ANDROID_LOG_DEBUG, "vins_executor", x)
 
 VinsSystem* vins_system = nullptr;
 

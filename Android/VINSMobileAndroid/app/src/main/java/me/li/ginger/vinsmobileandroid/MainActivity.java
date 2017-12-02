@@ -35,7 +35,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
     static {
         System.loadLibrary("opencv_java3");
         System.loadLibrary("vins");
-        System.loadLibrary("native-lib");
+        System.loadLibrary("vins_executor");
     }
 
     @Override
