@@ -29,8 +29,7 @@
 APP_BUILD_SCRIPT := $(call my-dir)/Android.mk
 APP_PROJECT_PATH := $(call my-dir)
 
-#APP_CPPFLAGS += -fno-exceptions
-#APP_CPPFLAGS += -fno-rtti
+NDK_TOOLCHAIN_VERSION := 4.9
 APP_CPPFLAGS += -fexceptions
 APP_CPPFLAGS += -frtti
 APP_CPPFLAGS += --std=c++11
@@ -38,7 +37,6 @@ APP_OPTIM := release
 
 # Use libc++ from LLVM. It is a modern BSD licensed implementation of
 # the standard C++ library.
-#APP_STL := c++_static
 APP_STL := gnustl_static
 APP_ABI := armeabi-v7a
 APP_PLATFORM := android-21
