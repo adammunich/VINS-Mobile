@@ -11,36 +11,37 @@ set(PREBUILT_LIBS "${CMAKE_SOURCE_DIR}/src/main/jniLibs")
 include_directories(${CMAKE_SOURCE_DIR}/src/main/cpp/include/OpenCV)
 include_directories(${CMAKE_SOURCE_DIR}/src/main/cpp/include/Boost)
 include_directories(${CMAKE_SOURCE_DIR}/src/main/cpp/include/Eigen)
-#include_directories(${CMAKE_SOURCE_DIR}/src/main/cpp/include/Ceres)
-#include_directories(${CMAKE_SOURCE_DIR}/src/main/cpp/include/Ceres/include)
-#include_directories(${CMAKE_SOURCE_DIR}/src/main/cpp/include/Ceres/config)
-#include_directories(${CMAKE_SOURCE_DIR}/src/main/cpp/include/Ceres/internal/ceres/miniglog)
-#include_directories(${CMAKE_SOURCE_DIR}/src/main/cpp/include/VINS)
-#include_directories(${CMAKE_SOURCE_DIR}/src/main/cpp/include/VINS/loop)
-#include_directories(${CMAKE_SOURCE_DIR}/src/main/cpp/include/VINS/delaunay)
-#include_directories(${CMAKE_SOURCE_DIR}/src/main/cpp/include/ThirdParty/DBoW)
-#include_directories(${CMAKE_SOURCE_DIR}/src/main/cpp/include/ThirdParty/DUtils)
-#include_directories(${CMAKE_SOURCE_DIR}/src/main/cpp/include/ThirdParty/DVision)
+include_directories(${CMAKE_SOURCE_DIR}/src/main/cpp/include/Eigen/../)
+include_directories(${CMAKE_SOURCE_DIR}/src/main/cpp/include/Ceres)
+include_directories(${CMAKE_SOURCE_DIR}/src/main/cpp/include/Ceres/include)
+include_directories(${CMAKE_SOURCE_DIR}/src/main/cpp/include/Ceres/config)
+include_directories(${CMAKE_SOURCE_DIR}/src/main/cpp/include/Ceres/internal/ceres/miniglog)
+include_directories(${CMAKE_SOURCE_DIR}/src/main/cpp/include/VINS)
+include_directories(${CMAKE_SOURCE_DIR}/src/main/cpp/include/VINS/loop)
+include_directories(${CMAKE_SOURCE_DIR}/src/main/cpp/include/VINS/delaunay)
+include_directories(${CMAKE_SOURCE_DIR}/src/main/cpp/include/ThirdParty/DBoW)
+include_directories(${CMAKE_SOURCE_DIR}/src/main/cpp/include/ThirdParty/DUtils)
+include_directories(${CMAKE_SOURCE_DIR}/src/main/cpp/include/ThirdParty/DVision)
 
 add_library(android_opencv_java3 SHARED IMPORTED )
 set_target_properties(android_opencv_java3 PROPERTIES
-                      IMPORTED_LOCATION "${PREBUILT_LIBS}/OpenCV/${ANDROID_ABI}/libopencv_java3.so")
+                      IMPORTED_LOCATION "${PREBUILT_LIBS}/${ANDROID_ABI}/libopencv_java3.so")
 
 add_library(android_boost_system SHARED IMPORTED )
 set_target_properties(android_boost_system PROPERTIES
-                      IMPORTED_LOCATION "${PREBUILT_LIBS}/Boost/libboost_system.so")
+                      IMPORTED_LOCATION "${PREBUILT_LIBS}/${ANDROID_ABI}/libboost_system.a")
 
 add_library(android_boost_thread SHARED IMPORTED )
 set_target_properties(android_boost_thread PROPERTIES
-                      IMPORTED_LOCATION "${PREBUILT_LIBS}/Boost/libboost_thread.so")
+                      IMPORTED_LOCATION "${PREBUILT_LIBS}/${ANDROID_ABI}/libboost_thread.a")
 
 add_library(android_ceres_solver STATIC IMPORTED )
 set_target_properties(android_ceres_solver PROPERTIES
-                      IMPORTED_LOCATION "${PREBUILT_LIBS}/Ceres/${ANDROID_ABI}/libceres.a")
+                      IMPORTED_LOCATION "${PREBUILT_LIBS}/${ANDROID_ABI}/libceres.a")
 
-#add_library(android_vins_core SHARED IMPORTED )
-#set_target_properties(android_vins_core PROPERTIES
-#                      IMPORTED_LOCATION "${PREBUILT_LIBS}/VINS/${ANDROID_ABI}/libvins.so")
+add_library(android_vins_core SHARED IMPORTED )
+set_target_properties(android_vins_core PROPERTIES
+                      IMPORTED_LOCATION "${PREBUILT_LIBS}/${ANDROID_ABI}/libvins.so")
 
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
@@ -78,8 +79,8 @@ target_link_libraries( # Specifies the target library.
                        android_opencv_java3
                        android_boost_system
                        android_boost_thread
-                       #android_ceres_solver
-                       #android_vins_core
+                       android_ceres_solver
+                       android_vins_core
 
                        # Links the target library to the log library
                        # included in the NDK.

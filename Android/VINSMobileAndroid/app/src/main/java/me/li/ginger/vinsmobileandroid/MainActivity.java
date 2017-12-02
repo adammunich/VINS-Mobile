@@ -11,10 +11,9 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
-import android.provider.Settings;
+import android.util.Log;
 import android.view.SurfaceView;
 import android.view.WindowManager;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import org.opencv.android.CameraBridgeViewBase;
@@ -34,8 +33,9 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
 
     // Used to load the 'native-lib' library on application startup.
     static {
-        System.loadLibrary("native-lib");
         System.loadLibrary("opencv_java3");
+        System.loadLibrary("vins");
+        System.loadLibrary("native-lib");
     }
 
     @Override
@@ -52,6 +52,8 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
 
         mOpenCvCameraView.setCameraIndex(0);
 
+        mOpenCvCameraView.setMaxFrameSize(640, 480);
+
         mOpenCvCameraView.setCvCameraViewListener(this);
 
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -60,7 +62,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
 
         mGyroSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
 
-        mVocabularyFilePath = Environment.getExternalStorageState() + "/brief_k10L6.bin";
+        mVocabularyFilePath = Environment.getExternalStorageDirectory() + "/brief_k10L6.bin";
         mPatternFilePath = Environment.getExternalStorageDirectory() + "/brief_pattern.yml";
         mConfigFilePath = Environment.getExternalStorageDirectory() + "/camparas.yml";
 
@@ -72,9 +74,6 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
             }
         }).start();
 
-        // Example of a call to a native method
-//        TextView tv = (TextView) findViewById(R.id.sample_text);
-//        tv.setText(stringFromJNI());
     }
 
     Handler mHandler = new Handler() {
@@ -123,9 +122,10 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
             firstNCameraFrames++;
         } else {
             if (isVinsRunning) {
-                double imgTimestamp = SystemClock.elapsedRealtime() / Math.pow(10, 9);
+                double imgTimestamp = SystemClock.elapsedRealtimeNanos() / Math.pow(10, 9);
                 Mat mRgba = inputFrame.rgba();
                 processFrame(imgTimestamp, mRgba.getNativeObjAddr());
+                //Log.d(TAG, "20171202 img: " + imgTimestamp);
                 return mRgba;
             }
         }
@@ -143,6 +143,8 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
                 double accelTimestamp = SystemClock.elapsedRealtimeNanos() / Math.pow(10, 9);
                 putAccelData(accelTimestamp, sensorEvent.values[0], sensorEvent.values[1], sensorEvent.values[2]);
                 prevImuDataType = Sensor.TYPE_ACCELEROMETER;
+//                Log.d(TAG, "20171202 acc: " + accelTimestamp + " " + sensorEvent.values[0] + " " +
+//                        sensorEvent.values[1] + " " + sensorEvent.values[2]);
             }
 
         } else if (sensor.getType() == Sensor.TYPE_GYROSCOPE) {
@@ -151,6 +153,8 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
                 double gyroTimestamp = SystemClock.elapsedRealtimeNanos() / Math.pow(10, 9);
                 putGyroData(gyroTimestamp, sensorEvent.values[0], sensorEvent.values[1], sensorEvent.values[2]);
                 prevImuDataType = Sensor.TYPE_GYROSCOPE;
+//                Log.d(TAG, "20171202 gyr: " + gyroTimestamp + " " + sensorEvent.values[0] + " " +
+//                        sensorEvent.values[1] + " " + sensorEvent.values[2]);
             }
 
         }
@@ -165,11 +169,9 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
      * A native method that is implemented by the 'native-lib' native library,
      * which is packaged with this application.
      */
-    public native String stringFromJNI();
+    public static native void initSystem(String vocabularyFilePath, String patternFilePath, String configFilePath);
 
-    public native void initSystem(String vocabularyFilePath, String patternFilePath, String configFilePath);
-
-    public native void processFrame(double imgTimestamp, long addrRgba);
+    public static native void processFrame(double imgTimestamp, long addrRgba);
 
     public native void putAccelData(double accelTimestamp, double accelX, double accelY, double accelZ);
 
