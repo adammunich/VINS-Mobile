@@ -30,10 +30,10 @@ DrawResult::DrawResult(float _pitch, float _roll, float _yaw, float _Tx, float _
     finger_s = finger_d = finger_p =0;
     finger_state = 0;
     origin_w.setZero();
-    X0 = WIDTH/2;
-    X0AR = WIDTH/2;
-    Y0 = HEIGHT/2;
-    Y0AR = HEIGHT/2;
+    X0 = FRAME_WIDTH/2;
+    X0AR = FRAME_WIDTH/2;
+    Y0 = FRAME_HEIGHT/2;
+    Y0AR = FRAME_HEIGHT/2;
     tapFlag = false;
     longPressFlag = false;
     KF_init = false;
@@ -48,7 +48,7 @@ bool checkBorder(const cv::Point2f &pt)
     const int BORDER_SIZE = 1;
     int img_x = cvRound(pt.x);
     int img_y = cvRound(pt.y);
-    return BORDER_SIZE <= img_x && img_x < HEIGHT - BORDER_SIZE && BORDER_SIZE <= img_y && img_y < WIDTH - BORDER_SIZE;
+    return BORDER_SIZE <= img_x && img_x < FRAME_HEIGHT - BORDER_SIZE && BORDER_SIZE <= img_y && img_y < FRAME_WIDTH - BORDER_SIZE;
 }
 
 float check_scale(const cv::Point2f &pt)
@@ -57,7 +57,7 @@ float check_scale(const cv::Point2f &pt)
     float scale_factor;
     int img_x = cvRound(pt.x);
     int img_y = cvRound(pt.y);
-    if(BORDER_SIZE <= img_x && img_x < WIDTH-10 - BORDER_SIZE && BORDER_SIZE <= img_y && img_y < HEIGHT - 10 - BORDER_SIZE)
+    if(BORDER_SIZE <= img_x && img_x < FRAME_WIDTH-10 - BORDER_SIZE && BORDER_SIZE <= img_y && img_y < FRAME_HEIGHT - 10 - BORDER_SIZE)
     {
         scale_factor = 1.0;
     }
@@ -65,11 +65,11 @@ float check_scale(const cv::Point2f &pt)
     {
         int max1 = 0,max2 = 0,max3 = 0,max4 = 0;
         
-        if(img_x>WIDTH - 10)
-            max1 = img_x - ( WIDTH - 10);
+        if(img_x>FRAME_WIDTH - 10)
+            max1 = img_x - ( FRAME_WIDTH - 10);
         
-        if(img_y> HEIGHT - 10)
-            max2 = img_y - (HEIGHT - 10);
+        if(img_y> FRAME_HEIGHT - 10)
+            max2 = img_y - (FRAME_HEIGHT - 10);
         
         if(img_x<1)
             max3 = 1 - img_x;
@@ -80,9 +80,9 @@ float check_scale(const cv::Point2f &pt)
         int max_result = max(max(max1,max2),max(max3,max4));
         
         if(max_result == max1 || max_result == max3)
-            scale_factor = (float)((WIDTH-10)/2.0)/((WIDTH-10)/2.0+max_result);
+            scale_factor = (float)((FRAME_WIDTH-10)/2.0)/((FRAME_WIDTH-10)/2.0+max_result);
         else
-            scale_factor = (float)((HEIGHT-10)/2.0)/((HEIGHT-10)/2.0+max_result);
+            scale_factor = (float)((FRAME_HEIGHT-10)/2.0)/((FRAME_HEIGHT-10)/2.0+max_result);
     }
     return scale_factor;
 }
@@ -375,7 +375,7 @@ void DrawResult::drawGround(cv::Mat &result, vector<Vector3f> &point_cloud, Vect
 {
     Eigen::Matrix3f RIC;
     RIC = Utility::ypr2R(Vector3d(RIC_y,RIC_p,RIC_r)).cast<float>();
-    cv::Mat aa(HEIGHT,WIDTH,CV_8UC3,Scalar(0,0,0));
+    cv::Mat aa(FRAME_HEIGHT,FRAME_WIDTH,CV_8UC3,Scalar(0,0,0));
     result = aa;
     
     std::vector<Vec2f_> points;
@@ -409,7 +409,7 @@ void DrawResult::drawGround(cv::Mat &result, vector<Vector3f> &point_cloud, Vect
 
 void DrawResult::drawBox(cv::Mat &result, Vector3f corner_0, Vector3f corner_x, Vector3f corner_y, Vector3f corner_z, float size, Vector3f P_latest, Matrix3f R_latest, bool inAR)
 {
-    
+
     Eigen::Matrix3f RIC;
     RIC = Utility::ypr2R(Vector3d(RIC_y,RIC_p,RIC_r)).cast<float>();
     
@@ -520,7 +520,7 @@ void DrawResult::drawBox(cv::Mat &result, Vector3f corner_0, Vector3f corner_x, 
 
 void DrawResult::drawAR(cv::Mat &result, vector<Vector3f> &point_cloud, Vector3f P_latest, Matrix3f R_latest)
 {
-    cv::Mat aa(HEIGHT,WIDTH,CV_8UC3,Scalar(0,0,0));
+    cv::Mat aa(FRAME_HEIGHT,FRAME_WIDTH,CV_8UC3,Scalar(0,0,0));
     result = aa;
     Eigen::Matrix3f RIC;
     RIC = Utility::ypr2R(Vector3d(RIC_y,RIC_p,RIC_r)).cast<float>();
@@ -554,18 +554,18 @@ void DrawResult::drawAR(cv::Mat &result, vector<Vector3f> &point_cloud, Vector3f
         if ( Grounds[i].boxflag)
             drawBox(result, Grounds[i].ori, Grounds[i].cox, Grounds[i].coy, Grounds[i].coz, Grounds[i].size, P_latest, R_latest, true);
     }
-    
-    
+
+
     
     
     ////////////////////////////// translation response
     /////////////////////////// follow mode translation response
     if ( locationX != locationX_p or locationY != locationY_p )
     {
-        float xx=480 - locationY -1;
+        float xx=FRAME_WIDTH - locationY -1;
         float yy= locationX;
-        float cx=240;
-        float cy=320;
+        float cx=PX;
+        float cy=PY;
         Vector3f box_center, Pc;
         Vector2f box_center_xy, center_input;
         center_input<< xx, yy;
@@ -629,10 +629,10 @@ void DrawResult::drawAR(cv::Mat &result, vector<Vector3f> &point_cloud, Vector3f
     }
     
     ////////////////////////////// translation response
-    
+
     ////////////////////////////// scale response
     {
-        float xx=480 - locationYP -1;
+        float xx=FRAME_WIDTH - locationYP -1;
         float yy= locationXP;
         
         Vector3f box_center, Pc;
@@ -672,12 +672,12 @@ void DrawResult::drawAR(cv::Mat &result, vector<Vector3f> &point_cloud, Vector3f
         
     }
     ////////////////////////////// scale response
-    
-    
+
+
     ///////////////////////////// rotation response
     {
         
-        float xx=480 - locationYT2 -1;
+        float xx=FRAME_WIDTH - locationYT2 -1;
         float yy= locationXT2;
         
         Vector3f box_center, Pc;
@@ -745,11 +745,11 @@ void DrawResult::drawAR(cv::Mat &result, vector<Vector3f> &point_cloud, Vector3f
         
     }
     ///////////////////////////// rotation response
-    
+
     //////////////////////////// long press unlock response
     if (longPressFlag)
     {
-        float xx=480 - locationLongPressY -1;
+        float xx=FRAME_WIDTH - locationLongPressY -1;
         float yy= locationLongPressX;
         
         Vector3f box_center, Pc;
@@ -788,11 +788,11 @@ void DrawResult::drawAR(cv::Mat &result, vector<Vector3f> &point_cloud, Vector3f
         longPressFlag = false;
     }
     //////////////////////////// long press unlock response
-    
+
     //add new box
     if (tapFlag and point_inlier.size()>28)
     {
-        float xx = 480 - locationTapY -1;
+        float xx = FRAME_WIDTH - locationTapY -1;
         float yy = locationTapX;
         Vector3f Pc;
         Vector2f box_center_xy, center_input;
@@ -948,7 +948,7 @@ cv::Point2f DrawResult::World2VirturCam(Eigen::Vector3f xyz, float &depth)
 void DrawResult::Reprojection(cv::Mat &result, vector<Vector3f> &point_cloud, const Matrix3f *R_window,const Vector3f *T_window, bool box_in_trajectorty)
 {
     float depth_marker;
-    cv::Mat aa(WIDTH,HEIGHT,CV_8UC3,Scalar(242,242,242));
+    cv::Mat aa(FRAME_WIDTH,FRAME_HEIGHT,CV_8UC3,Scalar(242,242,242));
     result = aa;
     
     Eigen::Matrix3f RIC;

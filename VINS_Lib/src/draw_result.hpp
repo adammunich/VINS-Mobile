@@ -22,8 +22,6 @@ using namespace cv;
 using namespace Eigen;
 using namespace std;
 
-#define HEIGHT 640
-#define WIDTH 480
 #define RADIUS 30
 
 
