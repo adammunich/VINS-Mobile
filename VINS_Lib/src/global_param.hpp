@@ -51,6 +51,8 @@ extern double FOCUS_LENGTH_X;
 extern double PX;
 extern double SOLVER_TIME;
 extern int FREQ;
+extern int FRAME_WIDTH;
+extern int FRAME_HEIGHT;
 
 //extrinsic param
 extern double TIC_X;
@@ -85,7 +87,8 @@ bool setGlobalParam(double focal_length_x, double focal_length_y,
                     double px, double py, double tic_x, double tic_y, double tic_z,
                     double ric_y, double ric_p, double ric_r, 
                     double acc_n, double acc_w, double gyr_n, double gyr_w,
-                    double solver_time, int freq);
+                    double solver_time, int freq,
+                    int frame_width, int frame_height);
 
 #if 1
 #define TS(name) int64 t_##name = cv::getTickCount()

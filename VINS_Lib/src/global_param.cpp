@@ -15,6 +15,8 @@ double FOCUS_LENGTH_X;
 double PX;
 double SOLVER_TIME;
 int FREQ;
+int FRAME_WIDTH;
+int FRAME_HEIGHT;
 
 //extrinsic param
 double TIC_X;
@@ -141,7 +143,8 @@ bool setGlobalParam(DeviceType device)
 bool setGlobalParam(double focal_length_x, double focal_length_y,
     double px, double py, double tic_x, double tic_y, double tic_z,
     double ric_y, double ric_p, double ric_r, double acc_n, double acc_w,
-    double gyr_n, double gyr_w, double solver_time, int freq)
+    double gyr_n, double gyr_w, double solver_time, int freq,
+    int frame_width, int frame_height)
 {
     FOCUS_LENGTH_X = focal_length_x;
     FOCUS_LENGTH_Y = focal_length_y;
@@ -159,5 +162,7 @@ bool setGlobalParam(double focal_length_x, double focal_length_y,
     GYR_W = gyr_w;
     SOLVER_TIME = solver_time;
     FREQ = freq;
+    FRAME_WIDTH = frame_width;
+    FRAME_HEIGHT = frame_height;
     return true;
 }
