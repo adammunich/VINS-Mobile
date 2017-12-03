@@ -29,7 +29,8 @@ VinsSystem::VinsSystem(const char* voc_file_path,
 						vins_params.tic_x, vins_params.tic_y, vins_params.tic_z,
 						vins_params.ric_y, vins_params.ric_p, vins_params.ric_r,
 						vins_params.acc_n, vins_params.acc_w, vins_params.gyr_n, vins_params.gyr_w,
-						vins_params.solver_time, vins_params.freq);
+						vins_params.solver_time, vins_params.freq,
+						vins_params.frame_width, vins_params.frame_height);
 
 		feature_tracker = new FeatureTracker(vins_params.frame_width, vins_params.frame_height);
 
@@ -743,6 +744,27 @@ void VinsSystem::drawTrajectory(cv::Mat& input_frame) {
 		input_frame = vins->image_show;
 	}
 
+}
+
+void VinsSystem::drawAr(cv::Mat& input_frame) {
+
+	if (vins->solver_flag == VINS::SolverFlag::NON_LINEAR) {
+		vins->drawresult.startInit = true;
+        vins->drawresult.drawAR(vins->imageAI, vins->correct_point_cloud, lateast_P, lateast_R);
+
+		if (!(vins->imageAI.empty())) {
+			cv::cvtColor(input_frame, input_frame, CV_RGBA2RGB);
+			cv::cvtColor(vins->imageAI, ar_mask, CV_RGB2GRAY);
+			vins->imageAI.copyTo(input_frame, ar_mask);
+		}
+	}
+
+}
+
+void VinsSystem::setArCubePosition(float ratio_x, float ratio_y) {
+	vins->drawresult.locationTapX = ratio_x * FRAME_WIDTH;
+    vins->drawresult.locationTapY = ratio_y * FRAME_HEIGHT;   
+    vins->drawresult.tapFlag = true;
 }
 
 void VinsSystem::getVinsStatus(VINS_STATUS& vins_status) {

@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.SystemClock;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -31,7 +32,6 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
     private int firstNCameraFrames = 0;
     private int prevImuDataType = Sensor.TYPE_GYROSCOPE;
 
-    // Used to load the 'native-lib' library on application startup.
     static {
         System.loadLibrary("opencv_java3");
         System.loadLibrary("vins");
@@ -165,6 +165,18 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
 
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                handleTap(event.getX() / mOpenCvCameraView.getWidth(),
+                        event.getY() / mOpenCvCameraView.getHeight());
+        }
+
+        return super.onTouchEvent(event);
+    }
+
     /**
      * A native method that is implemented by the 'native-lib' native library,
      * which is packaged with this application.
@@ -178,4 +190,6 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
     public native void putGyroData(double gyroTimestamp, double gyroX, double gyroY, double gyroZ);
 
     public native void shutdownSystem();
+
+    public native void handleTap(float ratio_x, float ratio_y);
 }

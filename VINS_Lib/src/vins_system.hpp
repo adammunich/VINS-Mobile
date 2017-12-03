@@ -84,6 +84,10 @@ public:
 
 	void drawTrajectory(cv::Mat& input_frame);
 
+	void drawAr(cv::Mat& input_frame);
+
+	void setArCubePosition(float ratio_x, float ratio_y);
+
 	void getVinsStatus(VINS_STATUS& vins_status);
 
 	void reinitSystem();
@@ -247,8 +251,12 @@ private:
 
 	/******************************* Render ******************************/
 
+	// for draw trajectory
 	cv::Mat thumbnail_frame;
 	cv::Mat thumbnail_region;
+
+	// for draw AR
+	cv::Mat ar_mask;
 
 private:
 

@@ -39,7 +39,9 @@ Java_me_li_ginger_vinsmobileandroid_MainActivity_processFrame(
 
     vins_system->processFrame(img_timestamp, input_frame);
 
-    vins_system->drawTrajectory(input_frame);
+    //vins_system->drawTrajectory(input_frame);
+
+    vins_system->drawAr(input_frame);
 
 }
 
@@ -69,5 +71,14 @@ Java_me_li_ginger_vinsmobileandroid_MainActivity_shutdownSystem(
     if (!vins_system) return;
 
     delete vins_system;
+}
+
+JNIEXPORT void JNICALL
+Java_me_li_ginger_vinsmobileandroid_MainActivity_handleTap(
+        JNIEnv *env, jobject obj,
+        jfloat ratio_x, jfloat ratio_y) {
+    if (!vins_system) return;
+
+    vins_system->setArCubePosition(ratio_x, ratio_y);
 }
 }
