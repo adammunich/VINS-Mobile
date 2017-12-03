@@ -245,6 +245,11 @@ private:
 	// Implied, updated by updateCameraMode()
 	bool imageCacheEnabled = cameraMode && !USE_PNP;
 
+	/******************************* Render ******************************/
+
+	cv::Mat thumbnail_frame;
+	cv::Mat thumbnail_region;
+
 private:
 
 	// Loop detection thread: this thread detect loop for newest keyframe and retrieve features

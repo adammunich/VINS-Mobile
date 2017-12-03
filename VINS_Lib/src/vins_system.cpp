@@ -732,6 +732,14 @@ void VinsSystem::drawTrajectory(cv::Mat& input_frame) {
 		vins->drawresult.segment_indexs = keyframe_database.segment_indexs;
 		vins->drawresult.Reprojection(vins->image_show, vins->correct_point_cloud, vins->correct_Rs, vins->correct_Ps, false);
 
+#ifdef ANDROID
+		cv::cvtColor(input_frame, thumbnail_frame, CV_RGBA2RGB);
+		cv::resize(thumbnail_frame, thumbnail_frame, cv::Size(160, 120));
+		thumbnail_region = vins->image_show(cv::Rect(10, vins->image_show.rows - thumbnail_frame.rows - 10, 
+								thumbnail_frame.cols, thumbnail_frame.rows));
+		thumbnail_frame.copyTo(thumbnail_region);
+#endif
+
 		input_frame = vins->image_show;
 	}
 
