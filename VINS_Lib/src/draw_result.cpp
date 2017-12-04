@@ -30,10 +30,10 @@ DrawResult::DrawResult(float _pitch, float _roll, float _yaw, float _Tx, float _
     finger_s = finger_d = finger_p =0;
     finger_state = 0;
     origin_w.setZero();
-    X0 = FRAME_WIDTH/2;
-    X0AR = FRAME_WIDTH/2;
-    Y0 = FRAME_HEIGHT/2;
-    Y0AR = FRAME_HEIGHT/2;
+    X0 = FRAME_HEIGHT/2;
+    X0AR = FRAME_HEIGHT/2;
+    Y0 = FRAME_WIDTH/2;
+    Y0AR = FRAME_WIDTH/2;
     tapFlag = false;
     longPressFlag = false;
     KF_init = false;
@@ -48,7 +48,7 @@ bool checkBorder(const cv::Point2f &pt)
     const int BORDER_SIZE = 1;
     int img_x = cvRound(pt.x);
     int img_y = cvRound(pt.y);
-    return BORDER_SIZE <= img_x && img_x < FRAME_HEIGHT - BORDER_SIZE && BORDER_SIZE <= img_y && img_y < FRAME_WIDTH - BORDER_SIZE;
+    return BORDER_SIZE <= img_x && img_x < FRAME_WIDTH - BORDER_SIZE && BORDER_SIZE <= img_y && img_y < FRAME_HEIGHT - BORDER_SIZE;
 }
 
 float check_scale(const cv::Point2f &pt)
@@ -948,7 +948,7 @@ cv::Point2f DrawResult::World2VirturCam(Eigen::Vector3f xyz, float &depth)
 void DrawResult::Reprojection(cv::Mat &result, vector<Vector3f> &point_cloud, const Matrix3f *R_window,const Vector3f *T_window, bool box_in_trajectorty)
 {
     float depth_marker;
-    cv::Mat aa(FRAME_WIDTH,FRAME_HEIGHT,CV_8UC3,Scalar(242,242,242));
+    cv::Mat aa(FRAME_HEIGHT,FRAME_WIDTH,CV_8UC3,Scalar(242,242,242));
     result = aa;
     
     Eigen::Matrix3f RIC;
