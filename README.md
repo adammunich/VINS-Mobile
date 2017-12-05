@@ -1,6 +1,76 @@
 # VINS-Mobile
 ## Monocular Visual-Inertial State Estimator on Mobile Phones
 
+**05 Dec 2017**: Run VINS-Mobile on Android 
+
+Dependencies (Android version): 
+	Boost - 1.6.0
+	OpenCV - 3.2.0
+	Ceres-Solver - 1.12
+
+Build tools: 
+
+	Android Studio 2.3.3
+		Android SDK API 23
+		Android NDK 15
+		CMake 3.6 
+
+Build procedure (Target ABI: armeabi-v7a):
+
+	1. Build Ceres-Solver for Android.
+
+		cd VINS_ThirdPartyLib/ceres-solver/jni/
+
+		export EIGEN_PATH=absolute_path_to_VINS_ThirdPartyLib_eigen3
+
+		$NDK/ndk-build -j4
+
+		(Default output at ceres-solver/obj/local/armeabi-v7a/)
+
+	2. Build VINS-Mobile library for Android.
+
+		cd VINS-Mobile
+
+		cd mkdir build_android && cd build_android
+
+		cmake -DCMAKE_BUILD_TYPE=Release -DBOOST_DIR=${BOOST_DIR} -DOPENCV_DIR=${OPENCV_DIR} ..
+
+		(Default output at VINS-Mobile/libs/android/armeabi-v7a/)
+
+	3. Create symbolic links for all dependencies includes and libraries.
+
+		cd Android/VINSMobileAndroid/app/src/main/cpp/
+
+		mkdir include && cd include 
+
+			ln -s aboslute_path_to_Boost_include ./Boost
+
+			ln -s aboslute_path_to_OpenCV_include ./OpenCV
+
+			ln -s aboslute_path_to_VINS_ThirdPartyLib/ceres-solver ./Ceres
+
+			ln -s aboslute_path_to_VINS_ThirdPartyLib/eigen3 ./Eigen
+
+			ln -s aboslute_path_to_VINS-Mobile/ThirdParty ./ThirdParty
+
+			ln -s aboslute_path_to_VINS-Mobile/VINS_Lib/src/ ./VINS
+
+		cd Android/VINSMobileAndroid/app/src/main/
+
+		mkdir jniLibs/armeabi-v7a/ && cd jniLibs/armeabi-v7a/
+
+			ln -s aboslute_path_to_Boost_lib/libboost_system.a libboost_system.a 
+
+			ln -s aboslute_path_to_Boost_lib/libboost_thread.a libboost_thread.a 
+
+			ln -s aboslute_path_to_OpenCV_lib/libopencv_java3.so libopencv_java3.so 
+
+			ln -s aboslute_path_to_Ceres_lib/libceres.a libceres.a 
+
+			ln -s aboslute_path_to_VINS_lib/libvins.so libvins.so 
+	
+	4. Build VINS-Mobile Android App.
+
 **13 Nov 2017**: Wrap VINS-Mobile into a library to be used on multiple platforms.
 
 Dependencies: 
