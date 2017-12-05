@@ -69,7 +69,18 @@ Build procedure (Target ABI: armeabi-v7a):
 
 			ln -s aboslute_path_to_VINS_lib/libvins.so libvins.so 
 	
-	4. Build VINS-Mobile Android App.
+	4. Build VINS-Mobile Android App in Android Studio
+
+		Import OpenCV Java as a module:
+
+			File -> Import Module ... -> Select path_to_OpenCV_SDK/sdk/java/
+
+		Add OpenCV as a dependency:
+
+			File -> Project Structure -> app -> Dependencies -> Add
+
+		Build project
+
 
 **13 Nov 2017**: Wrap VINS-Mobile into a library to be used on multiple platforms.
 
