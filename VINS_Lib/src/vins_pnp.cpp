@@ -91,17 +91,19 @@ void vinsPnP::updateFeatures(vector<IMG_MSG_LOCAL> &feature_msg)
 {
     for(int i = 0; i < frame_count; i++)
     {
-        int j = 0;
         for (auto &it : feature_msg)
         {
-            while(features[i][j].id < it.id)
+            for (int j = 0; j < features[i].size(); ++j)
             {
-                j++;
-            }
-            if(features[i][j].id == it.id)
-            {
-                features[i][j].position = it.position;
-                features[i][j].track_num = it.track_num;
+                if (features[i][j].id < it.id)
+                {
+                    
+                }
+                else if (features[i][j].id == it.id)
+                {
+                    features[i][j].position = it.position;
+                    features[i][j].track_num = it.track_num;
+                }
             }
         }
     }
@@ -382,6 +384,6 @@ void vinsPnP::slideWindow()
         dt_buf[PNP_SIZE].clear();
         linear_acceleration_buf[PNP_SIZE].clear();
         angular_velocity_buf[PNP_SIZE].clear();
-        
+
     }
 }
