@@ -26,11 +26,11 @@ add_library(android_opencv_java3 SHARED IMPORTED )
 set_target_properties(android_opencv_java3 PROPERTIES
                       IMPORTED_LOCATION "${PREBUILT_LIBS}/${ANDROID_ABI}/libopencv_java3.so")
 
-add_library(android_boost_system SHARED IMPORTED )
+add_library(android_boost_system STATIC IMPORTED )
 set_target_properties(android_boost_system PROPERTIES
                       IMPORTED_LOCATION "${PREBUILT_LIBS}/${ANDROID_ABI}/libboost_system.a")
 
-add_library(android_boost_thread SHARED IMPORTED )
+add_library(android_boost_thread STATIC IMPORTED )
 set_target_properties(android_boost_thread PROPERTIES
                       IMPORTED_LOCATION "${PREBUILT_LIBS}/${ANDROID_ABI}/libboost_thread.a")
 
