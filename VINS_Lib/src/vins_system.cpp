@@ -58,6 +58,10 @@ VinsSystem::VinsSystem(const char* voc_file_path,
 
 		is_vins_running = true;
 
+		clahe = cv::createCLAHE();
+
+		clahe->setClipLimit(3);
+
 }
 
 VinsSystem::~VinsSystem() {
@@ -95,17 +99,11 @@ void VinsSystem::detectLoopClosure() {
 			loop_check_cnt++;
 			cur_kf->check_loop = 1;
 
-			cv::Mat current_image;
 			current_image = cur_kf->image;
 
-			std::vector<cv::Point2f> measurements_old;
-			std::vector<cv::Point2f> measurements_old_norm;
-			std::vector<cv::Point2f> measurements_cur;
-			std::vector<int> features_id;
-			std::vector<cv::Point2f> measurements_cur_origin = cur_kf->measurements;
+			measurements_cur_origin.clear();
+			measurements_cur_origin = cur_kf->measurements;
 
-			vector<cv::Point2f> cur_pts;
-			vector<cv::Point2f> old_pts;
 			cur_kf->extractBrief(current_image);
 			printf("loop extract %lu feature\n", cur_kf->keypoints.size());
 			loop_succ = loop_closure->startLoopClosure(cur_kf->keypoints, cur_kf->descriptors, cur_pts, old_pts, old_index);
@@ -124,6 +122,14 @@ void VinsSystem::detectLoopClosure() {
 				Matrix3d R_w_i_old;
 
 				old_kf->getPose(T_w_i_old, R_w_i_old);
+
+				cur_pts.clear();
+				old_pts.clear();
+				measurements_old.clear();
+				measurements_old_norm.clear();
+				measurements_cur.clear();
+				features_id.clear();
+
 				cur_kf->findConnectionWithOldFrame(old_kf, cur_pts, old_pts,
 					measurements_old, measurements_old_norm);
 				measurements_cur = cur_kf->measurements;
@@ -240,7 +246,6 @@ void VinsSystem::sendImu(IMU_MSG &imu_msg) {
 }
 
 void VinsSystem::fusion() {
-	std::vector<std::pair<std::vector<IMU_MSG>, IMG_MSG> > measurements;
 	while (is_vins_running) {
 		measurements.clear();
 		std::unique_lock<std::mutex> lk(m_buf);
@@ -260,7 +265,7 @@ void VinsSystem::fusion() {
 			}
 
 			auto img_msg = measurement.second;
-			map<int, Vector3d> image = img_msg.point_clouds;
+			image = img_msg.point_clouds;
 			double header = img_msg.header;
 			TS(process_image);
 			vins->processImage(image, header, waiting_lists);
@@ -622,7 +627,6 @@ void VinsSystem::processFrame(double img_timestamp, cv::Mat& input_frame) {
 		img_msg.header = img_timestamp;
 		bool isNeedRotation = false; //input_frame.size() != frameSize;
 
-		cv::Mat gray;
 		if (input_frame.channels() == 4) // for mobile camera input 
 		{
 			cv::cvtColor(input_frame, gray, CV_RGBA2GRAY);
@@ -635,10 +639,8 @@ void VinsSystem::processFrame(double img_timestamp, cv::Mat& input_frame) {
 		{
 			gray = input_frame.clone();
 		}
-		cv::Mat img_with_feature;
+		
 		cv::Mat img_equa;
-		cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
-		clahe->setClipLimit(3);
 		clahe->apply(gray, img_equa);
 		//img_equa = gray;
 		TS(time_feature);

@@ -198,6 +198,19 @@ private:
 	// Solved VINS status feedback to featuretracker
 	VINS_RESULT solved_vins;
 
+	/******************************* Feature Tracking ******************************/
+	cv::Mat gray;
+
+	cv::Mat img_with_feature;
+		
+	cv::Ptr<cv::CLAHE> clahe;
+
+	/******************************* Fusion ******************************/
+
+	std::vector<std::pair<std::vector<IMU_MSG>, IMG_MSG> > measurements;
+
+	map<int, Vector3d> image;
+
 	/******************************* Loop Closure ******************************/
 
 	// Raw image data buffer for extracting FAST feature
@@ -234,6 +247,22 @@ private:
 
 	// Rotation drift
 	Eigen::Matrix3d loop_correct_r = Eigen::Matrix3d::Identity();
+
+	std::vector<cv::Point2f> measurements_old;
+
+	std::vector<cv::Point2f> measurements_old_norm;
+
+	std::vector<cv::Point2f> measurements_cur;
+
+	std::vector<int> features_id;
+
+	std::vector<cv::Point2f> measurements_cur_origin;
+
+	cv::Mat current_image;
+
+	vector<cv::Point2f> cur_pts;
+
+	vector<cv::Point2f> old_pts;
 
 	/******************************* Loop Closure ******************************/
 
