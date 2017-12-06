@@ -132,6 +132,8 @@ private:
     std::vector<BRIEF::bitset> window_descriptors;
     const int m_frame_width_;
     const int m_frame_height_;
+    
+    BriefExtractor* extractor = nullptr;
 };
 
 #endif

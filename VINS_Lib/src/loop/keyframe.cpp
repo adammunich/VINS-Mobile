@@ -17,6 +17,8 @@ KeyFrame::KeyFrame(double _header, int _global_index, Eigen::Vector3d _T_w_i, Ei
     origin_T_w_i = _T_w_i;
     origin_R_w_i = _R_w_i;
     check_loop = 0;
+
+    extractor = new BriefExtractor(BRIEF_PATTERN_FILE);
 }
 
 /*****************************************utility function************************************************/
@@ -66,8 +68,7 @@ void KeyFrame::rejectWithF(vector<cv::Point2f> &measurements_old,
 
 void KeyFrame::extractBrief(cv::Mat &image)
 {
-    BriefExtractor extractor(BRIEF_PATTERN_FILE);
-    extractor(image, measurements, keypoints, descriptors);
+    (*extractor)(image, measurements, keypoints, descriptors);
     int start = keypoints.size() - measurements.size();
     for(int i = 0; i< measurements.size(); i++)
     {
