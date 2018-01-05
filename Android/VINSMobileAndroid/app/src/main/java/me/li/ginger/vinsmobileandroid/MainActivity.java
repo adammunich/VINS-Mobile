@@ -64,7 +64,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
 
         mVocabularyFilePath = Environment.getExternalStorageDirectory() + "/brief_k10L6.bin";
         mPatternFilePath = Environment.getExternalStorageDirectory() + "/brief_pattern.yml";
-        mConfigFilePath = Environment.getExternalStorageDirectory() + "/camparas.yml";
+        mConfigFilePath = Environment.getExternalStorageDirectory() + "/camparas.yaml";
 
         new Thread(new Runnable() {
             @Override

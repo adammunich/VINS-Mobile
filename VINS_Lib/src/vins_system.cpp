@@ -451,104 +451,45 @@ void VinsSystem::getImuMeasurements(double header, std::vector<IMU_MSG_LOCAL>& i
 }
 
 void VinsSystem::readVinsConfigFile(VINS_PARAMS &params, const char *params_file_path) {
-	if (!params_file_path || params_file_path[0] == '\0') {
-		printf("Empty file path ...\n");
+
+	cv::FileStorage vins_config(params_file_path, cv::FileStorage::READ);
+
+	if (!vins_config.isOpened()) {
+		printf("Failed to open file at: %s\n", params_file_path);
 		return;
 	}
 
-	std::ifstream params_file(params_file_path);
+	params.focal_length_x = vins_config["Camera.fx"];
+    params.focal_length_y = vins_config["Camera.fy"];
+    params.px = vins_config["Camera.cx"];
+	params.py = vins_config["Camera.cy"];
 
-	if (params_file.good()) {
+	params.tic_x = vins_config["Camera.tic_x"];
+	params.tic_y = vins_config["Camera.tic_y"];
+	params.tic_z = vins_config["Camera.tic_z"];
 
-		printf("Found VINS config file\n");
+	params.ric_y = vins_config["Camera.ric_y"];
+	params.ric_p = vins_config["Camera.ric_p"];
+	params.ric_r = vins_config["Camera.ric_r"];
+	
+	params.frame_width = vins_config["Camera.frame_width"];
+	params.frame_height = vins_config["Camera.frame_height"];
 
-		std::string l1, l2, l3, l4, l5, l6;
-		std::getline(params_file, l1);
-		std::getline(params_file, l2);
-		std::getline(params_file, l3);
-		std::getline(params_file, l4);
-		std::getline(params_file, l5);
-		std::getline(params_file, l6);
+	params.acc_n = vins_config["Imu.acc_n"];
+	params.acc_w = vins_config["Imu.acc_w"];
+	params.gyr_n = vins_config["Imu.gyr_n"];
+    params.gyr_w = vins_config["Imu.gyr_w"];
+    
+    params.freq = vins_config["Solver.freq"];
+    params.solver_time = vins_config["Solver.time"];
 
-		float intrinsics[4], extrinsics[10];
-		float input_solver_time;
-		int input_freq, input_frame_width, input_frame_height;
-		// line 1: fx, fy, cx, cy
-		if (std::sscanf(l1.c_str(), "%f %f %f %f",
-				&intrinsics[0], &intrinsics[1], &intrinsics[2], &intrinsics[3]) == 4) {
-
-			printf("Found VINS params fx: %.3f, fy: %.3f, cx: %.3f, cy: %.3f\n",
-					intrinsics[0], intrinsics[1], intrinsics[2], intrinsics[3]);
-
-			params.focal_length_x = intrinsics[0];
-			params.focal_length_y = intrinsics[1];
-			params.px = intrinsics[2];
-			params.py = intrinsics[3];
-
-		}
-		// line 2: FREQ, solver time
-		if (std::sscanf(l2.c_str(), "%d %f",
-				&input_freq, &input_solver_time) == 2) {
-
-			printf("Found VINS params freq: %d, solver time: %.3f\n",
-					input_freq, input_solver_time);
-
-			params.freq = input_freq;
-			params.solver_time =  input_solver_time;
-
-		}
-		// line 3: tic_x, tic_y, tic_z
-		if (std::sscanf(l3.c_str(), "%f %f %f",
-				&extrinsics[0], &extrinsics[1], &extrinsics[2]) == 3) {
-
-			printf("Found VINS params tic_x: %.3f, tic_y: %.3f, tic_z: %.3f\n",
-					extrinsics[0], extrinsics[1], extrinsics[2]);
-
-			params.tic_x = extrinsics[0];
-			params.tic_y = extrinsics[1];
-			params.tic_z = extrinsics[2];
-
-		}
-		// line 4: ric_y, ric_p, ric_r
-		if (std::sscanf(l4.c_str(), "%f %f %f",
-				&extrinsics[3], &extrinsics[4], &extrinsics[5]) == 3) {
-
-			printf("Found VINS params ric_y: %.3f, ric_p: %.3f, ric_r: %.3f\n",
-					extrinsics[3], extrinsics[4], extrinsics[5]);
-
-			params.ric_y = extrinsics[3];
-			params.ric_p = extrinsics[4];
-			params.ric_r = extrinsics[5];
-
-		}
-		// line 5: acc_n, acc_w, gyr_n, gyr_w
-		if (std::sscanf(l5.c_str(), "%f %f %f %f",
-				&extrinsics[6], &extrinsics[7], &extrinsics[8], &extrinsics[9]) == 4) {
-
-			printf("Found VINS params acc_n: %.3f, acc_w: %.3f, gyr_n: %.3f, gyr_w: %.3f\n",
-					extrinsics[6], extrinsics[7], extrinsics[8], extrinsics[9]);
-
-			params.acc_n = extrinsics[6];
-			params.acc_w = extrinsics[7];
-			params.gyr_n = extrinsics[8];
-			params.gyr_w = extrinsics[9];
-
-		}
-		// line 6: width, height
-		if (std::sscanf(l6.c_str(), "%d %d",
-				&input_frame_width, &input_frame_height) == 2) {
-
-			printf("Found VINS params width: %d, height: %d\n",
-					input_frame_width, input_frame_height);
-
-			params.frame_width = input_frame_width;
-			params.frame_height = input_frame_height;
-
-        }
-
-	}
-
-	params_file.close();
+    printf("params: %f %f %f %f %f %f %f %f %f %f %d %d %f %f %f %f %d %f\n",
+            params.focal_length_x, params.focal_length_y, params.px, params.py, 
+            params.tic_x, params.tic_y, params.tic_z,
+            params.ric_y, params.ric_p, params.ric_r,
+            params.frame_width, params.frame_height,
+            params.acc_n, params.acc_w, params.gyr_n, params.gyr_w,
+            params.freq, params.solver_time);
 }
 
 void VinsSystem::putAccelData(double imu_timestamp, double accel_x, double accel_y, double accel_z) {
