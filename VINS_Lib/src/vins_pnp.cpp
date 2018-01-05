@@ -91,18 +91,16 @@ void vinsPnP::updateFeatures(vector<IMG_MSG_LOCAL> &feature_msg)
 {
     for(int i = 0; i < frame_count; i++)
     {
+        int j = 0;
         for (auto &it : feature_msg)
         {
-            for (int j = 0; j < features[i].size(); ++j)
+            for (; j < features[i].size(); ++j)
             {
-                if (features[i][j].id < it.id)
-                {
-                    
-                }
-                else if (features[i][j].id == it.id)
+                if (features[i][j].id == it.id)
                 {
                     features[i][j].position = it.position;
                     features[i][j].track_num = it.track_num;
+                    break;
                 }
             }
         }
