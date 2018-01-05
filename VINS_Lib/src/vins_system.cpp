@@ -42,9 +42,9 @@ VinsSystem::VinsSystem(const char* voc_file_path,
 
 		vins->setIMUModel();
 
-		feature_tracker->vins_pnp.setExtrinsic();
+		feature_tracker->vins_pnp->setExtrinsic();
 
-		feature_tracker->vins_pnp.setIMUModel();
+		feature_tracker->vins_pnp->setIMUModel();
 
 		if (LOOP_CLOSURE) {
 

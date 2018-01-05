@@ -20,6 +20,18 @@ FeatureTracker::FeatureTracker(int frame_width, int frame_height)
 {
     mask = cv::Mat(m_frame_height_, m_frame_width_, CV_8UC1);
     //printf("init ok mask w = %d, h = %d\n", mask.cols, mask.rows);
+
+    if (!vins_pnp)
+        vins_pnp = new vinsPnP();
+}
+
+FeatureTracker::~FeatureTracker()
+{
+    if (vins_pnp)
+    {
+        delete vins_pnp;
+        vins_pnp = nullptr;
+    }    
 }
 /*********************************************************tools function for feature tracker start*****************************************************/
 bool inBorder(const cv::Point2f &pt, const int frame_width, const int frame_height)
@@ -145,7 +157,7 @@ bool FeatureTracker::solveVinsPnP(double header, Vector3d &P, Matrix3d &R, bool 
      return false;
      }
      */
-    vins_pnp.setInit(solved_vins);
+    vins_pnp->setInit(solved_vins);
     printf("pnp imu header: ");
     for(auto &it : imu_msgs)
     {
@@ -155,13 +167,13 @@ bool FeatureTracker::solveVinsPnP(double header, Vector3d &P, Matrix3d &R, bool 
         double dt = (t - current_time);
         current_time = t;
         printf("%lf ",t);
-        vins_pnp.processIMU(dt, it.acc, it.gyr);
+        vins_pnp->processIMU(dt, it.acc, it.gyr);
     }
     printf("image %lf\n", header);
-    vins_pnp.processImage(feature_msg, header, use_pnp);
+    vins_pnp->processImage(feature_msg, header, use_pnp);
     
-    P = vins_pnp.Ps[PNP_SIZE - 1];
-    R = vins_pnp.Rs[PNP_SIZE - 1];
+    P = vins_pnp->Ps[PNP_SIZE - 1];
+    R = vins_pnp->Rs[PNP_SIZE - 1];
     Vector3d R_ypr = Utility::R2ypr(R);
     return true;
 }

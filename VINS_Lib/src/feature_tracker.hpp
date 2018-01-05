@@ -55,6 +55,7 @@ class FeatureTracker
 {
 public:
     FeatureTracker(int frame_width, int frame_height);
+    ~FeatureTracker();
     bool solveVinsPnP(double header, Vector3d &P, Matrix3d &R, bool vins_normal);
     void readImage(const cv::Mat &_img, cv::Mat &result, int _frame_cnt, vector<Point2f> &good_pts, vector<double> &track_len, double header, Vector3d &P, Matrix3d &R, bool vins_normal);
     void setMask();
@@ -76,7 +77,7 @@ public:
     static int n_id;
     int img_cnt;
     double current_time;
-    vinsPnP vins_pnp;
+    vinsPnP *vins_pnp = nullptr;
     bool use_pnp;
     
     /*
