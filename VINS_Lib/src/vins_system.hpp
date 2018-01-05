@@ -96,7 +96,9 @@ public:
 
 private:
 
-	bool is_vins_running = false;
+	volatile bool is_vins_running = false;
+
+	std::mutex shutdown_mutex;
 
 	const char* voc_file;
 
@@ -306,6 +308,8 @@ private:
 	void getImuMeasurements(double header, std::vector<IMU_MSG_LOCAL>& imu_measurements);
 
 	void readVinsConfigFile(VINS_PARAMS &params, const char *params_file_path);
+
+	bool isStillRunning();
 
 };
 

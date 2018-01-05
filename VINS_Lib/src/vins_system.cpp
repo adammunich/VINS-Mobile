@@ -56,7 +56,9 @@ VinsSystem::VinsSystem(const char* voc_file_path,
 
 		fusion_thread = boost::thread(&VinsSystem::fusion, this);
 
+		shutdown_mutex.lock();
 		is_vins_running = true;
+		shutdown_mutex.unlock();
 
 		clahe = cv::createCLAHE();
 
@@ -68,6 +70,10 @@ VinsSystem::~VinsSystem() {
 	delete feature_tracker;
 	delete vins;
 	delete loop_closure;
+
+	feature_tracker = nullptr;
+	vins = nullptr;
+	loop_closure = nullptr;
 }
 
 void VinsSystem::detectLoopClosure() {
@@ -83,7 +89,10 @@ void VinsSystem::detectLoopClosure() {
 		voc_init_ok = true;
 	}
 
-	while (is_vins_running) {
+	while (true) {
+
+		if (!isStillRunning())
+			break;
 
 		if(!LOOP_CLOSURE)
 		{
@@ -109,6 +118,10 @@ void VinsSystem::detectLoopClosure() {
 
 			cur_kf->extractBrief(current_image);
 			printf("loop extract %lu feature\n", cur_kf->keypoints.size());
+
+			if (!isStillRunning())
+				break;
+
 			loop_succ = loop_closure->startLoopClosure(cur_kf->keypoints, cur_kf->descriptors, cur_pts, old_pts, old_index);
 			if(loop_succ)
 			{
@@ -133,6 +146,9 @@ void VinsSystem::detectLoopClosure() {
 				measurements_cur.clear();
 				features_id.clear();
 
+				if (!isStillRunning())
+					break;
+				
 				cur_kf->findConnectionWithOldFrame(old_kf, cur_pts, old_pts,
 					measurements_old, measurements_old_norm);
 				measurements_cur = cur_kf->measurements;
@@ -166,8 +182,15 @@ void VinsSystem::detectLoopClosure() {
 		}
 
 		if(loop_succ) {
+			if (!isStillRunning())
+				break;
+
 			boost::this_thread::sleep(boost::posix_time::milliseconds(2000));
 		}
+
+		if (!isStillRunning())
+			break;
+
 		boost::this_thread::sleep(boost::posix_time::milliseconds(50));
 	}
 
@@ -175,9 +198,13 @@ void VinsSystem::detectLoopClosure() {
 
 void VinsSystem::globalOptimization() {
 
-	while (is_vins_running) {
+	while (true) {
 		if (start_global_optimization) {
 			start_global_optimization = false;
+
+			if (!isStillRunning())
+				break;
+
 			TS(global_optimization_thread);
 			keyframe_database.optimize4DoFLoopPoseGraph(kf_global_index,
 				loop_correct_t,
@@ -185,8 +212,16 @@ void VinsSystem::globalOptimization() {
 			vins->t_drift = loop_correct_t;
 			vins->r_drift = loop_correct_r;
 			TE(global_optimization_thread);
+
+			if (!isStillRunning())
+				break;
+
 			boost::this_thread::sleep(boost::posix_time::milliseconds(1170));
 		} 
+
+		if (!isStillRunning())
+			break;
+
 		boost::this_thread::sleep(boost::posix_time::milliseconds(30));
 	}
 
@@ -195,6 +230,9 @@ void VinsSystem::globalOptimization() {
 void VinsSystem::getMeasurements(std::vector<std::pair<std::vector<IMU_MSG>, IMG_MSG> >& measurements) {
 		while (true)
 		{
+			if (!isStillRunning())
+				break;
+
 			if (imu_msg_buf.empty() || img_msg_buf.empty())
 				return;
 
@@ -250,16 +288,27 @@ void VinsSystem::sendImu(IMU_MSG &imu_msg) {
 }
 
 void VinsSystem::fusion() {
-	while (is_vins_running) {
+	while (true) {
+
+		if (!isStillRunning())
+			break;
+
 		measurements.clear();
 		std::unique_lock<std::mutex> lk(m_buf);
 		con.wait(lk, [&]
 		{
 			getMeasurements(measurements);
+
+			if (!isStillRunning())
+				return true; 
+
 			return measurements.size() != 0;
 		});
 		lk.unlock();
 		waiting_lists = measurements.size();
+
+		if (!isStillRunning())
+			break;
 
 		for(auto &measurement : measurements)
 		{
@@ -308,6 +357,9 @@ void VinsSystem::fusion() {
 
 			if(imageCacheEnabled)
 			{
+				if (!isStillRunning())
+					break;
+
 				//add state into vins buff for alignwith image
 				if(vins->solver_flag == VINS::SolverFlag::NON_LINEAR)
 				{
@@ -334,6 +386,9 @@ void VinsSystem::fusion() {
 			**/
 			if(LOOP_CLOSURE)
 			{
+				if (!isStillRunning())
+					break;
+
 				static bool first_frame = true;
 				if(vins->solver_flag != VINS::SolverFlag::NON_LINEAR)
 					first_frame = true;
@@ -788,8 +843,26 @@ void VinsSystem::reinitSystem() {
 }
 
 void VinsSystem::shutdownSystem() {
-	is_vins_running = true;
+
+	shutdown_mutex.lock();
+	is_vins_running = false;
+	shutdown_mutex.unlock();
+
+	m_depth_feedback.unlock();
+	m_imu_feedback.unlock();
+	m_buf.unlock();
+	con.notify_one();
+	m_image_buf_loop.unlock();
+
 	fusion_thread.join();
 	loop_closing_thread.join();
 	global_optimization_thread.join();
+}
+
+bool VinsSystem::isStillRunning() {
+	bool running = false;
+	shutdown_mutex.lock();
+	running = is_vins_running;
+	shutdown_mutex.unlock();
+	return running;
 }

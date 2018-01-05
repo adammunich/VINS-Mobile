@@ -70,7 +70,11 @@ Java_me_li_ginger_vinsmobileandroid_MainActivity_shutdownSystem(
         JNIEnv *env, jobject obj) {
     if (!vins_system) return;
 
+    vins_system->shutdownSystem();
+
     delete vins_system;
+
+    vins_system = nullptr;
 }
 
 JNIEXPORT void JNICALL

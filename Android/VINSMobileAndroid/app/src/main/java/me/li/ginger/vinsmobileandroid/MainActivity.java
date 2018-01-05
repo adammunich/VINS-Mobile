@@ -66,14 +66,6 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
         mPatternFilePath = Environment.getExternalStorageDirectory() + "/brief_pattern.yml";
         mConfigFilePath = Environment.getExternalStorageDirectory() + "/camparas.yaml";
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                initSystem(mVocabularyFilePath, mPatternFilePath, mConfigFilePath);
-                mHandler.sendEmptyMessage(INIT_FINISHED);
-            }
-        }).start();
-
     }
 
     Handler mHandler = new Handler() {
@@ -91,18 +83,32 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
     @Override
     protected void onResume() {
         super.onResume();
-        mOpenCvCameraView.enableView();
+        firstNCameraFrames = 0;
+        if (mOpenCvCameraView != null) {
+            mOpenCvCameraView.enableView();
+        }
         mSensorManager.registerListener(this, mAccelSensor, 10000);
         mSensorManager.registerListener(this, mGyroSensor, 10000);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                initSystem(mVocabularyFilePath, mPatternFilePath, mConfigFilePath);
+                mHandler.sendEmptyMessage(INIT_FINISHED);
+            }
+        }).start();
     }
 
     @Override
     protected void onPause() {
-        super.onPause();
         if (mOpenCvCameraView != null) {
             mOpenCvCameraView.disableView();
         }
         mSensorManager.unregisterListener(this);
+
+        shutdownSystem();
+
+        super.onPause();
     }
 
     @Override
