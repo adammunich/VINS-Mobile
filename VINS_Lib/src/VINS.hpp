@@ -51,6 +51,7 @@ public:
     typedef IMUFactor IMUFactor_t;
     
     VINS();
+    ~VINS();
     
     enum SolverFlag
     {

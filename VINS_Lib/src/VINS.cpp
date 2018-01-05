@@ -32,6 +32,32 @@ init_status(FAIL_IMU)
     last_R_old.setIdentity();
 }
 
+VINS::~VINS()
+{
+    for (int i = 0; i < 10 * (WINDOW_SIZE + 1); ++i)
+    {
+        if (pre_integrations[i])
+        {
+            delete pre_integrations[i];
+            pre_integrations[i] = nullptr;
+        }    
+    }
+
+    if (last_marginalization_info)
+    {
+        delete last_marginalization_info;
+        last_marginalization_info = nullptr;
+    }
+
+    if (tmp_pre_integration)
+    {
+        delete tmp_pre_integration;
+        tmp_pre_integration = nullptr;
+    }
+
+    last_marginalization_parameter_blocks.clear();
+}
+
 void VINS::setIMUModel()
 {
     ProjectionFactor::sqrt_info = FOCUS_LENGTH_X / 1.5 * Matrix2d::Identity();

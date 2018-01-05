@@ -47,6 +47,7 @@ public:
     typedef IMUFactorPnP IMUFactor_t;
     
     vinsPnP();
+    ~vinsPnP();
     int frame_count;
     
     Matrix3d ric;

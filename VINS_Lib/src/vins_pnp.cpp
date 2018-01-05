@@ -19,6 +19,18 @@ vinsPnP::vinsPnP()
     clearState();
 }
 
+vinsPnP::~vinsPnP()
+{
+    for (int i = 0; i < (PNP_SIZE + 1); ++i)
+    {
+        if (pre_integrations[i])
+        {
+            delete pre_integrations[i];
+            pre_integrations[i] = nullptr;
+        }
+    }
+}
+
 void vinsPnP::setIMUModel()
 {
     PerspectiveFactor::sqrt_info = FOCUS_LENGTH_X / 1.5 * Matrix2d::Identity();
