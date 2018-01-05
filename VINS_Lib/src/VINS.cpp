@@ -49,7 +49,6 @@ void VINS::clearState()
         Bgs[i].setZero();
         IMU_linear[i].setZero();
         IMU_angular[i].setIdentity();
-        pre_integrations[i] = nullptr;
         dt_buf[i].clear();
         linear_acceleration_buf[i].clear();
         angular_velocity_buf[i].clear();

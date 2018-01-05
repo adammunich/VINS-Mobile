@@ -104,6 +104,9 @@ void VinsSystem::detectLoopClosure() {
 			measurements_cur_origin.clear();
 			measurements_cur_origin = cur_kf->measurements;
 
+			if (current_image.empty())
+				continue;
+
 			cur_kf->extractBrief(current_image);
 			printf("loop extract %lu feature\n", cur_kf->keypoints.size());
 			loop_succ = loop_closure->startLoopClosure(cur_kf->keypoints, cur_kf->descriptors, cur_pts, old_pts, old_index);
@@ -158,7 +161,8 @@ void VinsSystem::detectLoopClosure() {
 					loop_old_index = old_index;
 				}
 			}
-			cur_kf->image.release();
+			if (!cur_kf->image.empty())
+				cur_kf->image.release();
 		}
 
 		if(loop_succ) {

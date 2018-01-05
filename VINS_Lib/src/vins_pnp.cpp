@@ -34,7 +34,6 @@ void vinsPnP::clearState()
         Vs[i].setZero();
         Bas[i].setZero();
         Bgs[i].setZero();
-        pre_integrations[i] = nullptr;
         dt_buf[i].clear();
         linear_acceleration_buf[i].clear();
         angular_velocity_buf[i].clear();
