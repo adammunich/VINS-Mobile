@@ -94,6 +94,61 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 	set(CERES_LIBS 
 		${PROJECT_SOURCE_DIR}/VINS_ThirdPartyLib/ceres-solver/build_macos/install/lib/libceres.dylib
 	)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+	message("Build VINS-Mobile Windows ...")
+
+	set (CMAKE_CXX_STANDARD 11)
+	
+	include(CheckCXXCompilerFlag)
+		CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+		CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
+	if(COMPILER_SUPPORTS_CXX11)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+	elseif(COMPILER_SUPPORTS_CXX0X)
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+	else()
+		message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
+	endif()
+
+	set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/libs/windows)
+	
+	set(BOOST_INCLUDE_DIR ${BOOST_DIR}/include/boost-1_63)
+
+	set(BOOST_LIBS 
+		${BOOST_DIR}/lib/libboost_system-vc140-mt-1_63.lib
+		${BOOST_DIR}/lib/libboost_thread-vc140-mt-1_63.lib
+		${BOOST_DIR}/lib/libboost_filesystem-vc140-mt-1_63.lib
+		${BOOST_DIR}/lib/libboost_date_time-vc140-mt-1_63.lib
+		${BOOST_DIR}/lib/libboost_chrono-vc140-mt-1_63.lib
+	)
+
+	set(OpenCV_INCLUDE_DIR ${OPENCV_DIR}/include/)
+
+	set(OpenCV_LIBS 
+		${OPENCV_DIR}/lib/opencv_calib3d320.lib
+		${OPENCV_DIR}/lib/opencv_core320.lib
+		${OPENCV_DIR}/lib/opencv_highgui320.lib
+		${OPENCV_DIR}/lib/opencv_imgcodecs320.lib
+		${OPENCV_DIR}/lib/opencv_imgproc320.lib
+		${OPENCV_DIR}/lib/opencv_features2d320.lib
+		${OPENCV_DIR}/lib/opencv_video320.lib
+		${OPENCV_DIR}/lib/opencv_videostab320.lib
+		${OPENCV_DIR}/lib/opencv_videoio320.lib
+	)
+
+	set(CERES_LIBS 
+		${PROJECT_SOURCE_DIR}/VINS_ThirdPartyLib/ceres-solver/build_windows/install/lib/ceres.lib
+	)
+	
+	set(PTHREAD_INCLUDE_DIR
+		${PTHREAD_DIR}/include/
+	)
+	
+	set(PTHREAD_LIBS
+		${PTHREAD_DIR}/lib/x86/pthreadVC2.lib
+		${PTHREAD_DIR}/lib/x86/pthreadVCE2.lib
+		${PTHREAD_DIR}/lib/x86/pthreadVSE2.lib
+	)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
 	message("Build VINS-Mobile Android ...")
 
@@ -162,6 +217,7 @@ set(VINS_SOURCE_FILES
 include_directories(
   ${BOOST_INCLUDE_DIR}
   ${OpenCV_INCLUDE_DIR} 
+  ${PTHREAD_INCLUDE_DIR}
   ${PROJECT_SOURCE_DIR}/VINS_Lib/src	
   ${PROJECT_SOURCE_DIR}/VINS_Lib/src/delaunay
   ${PROJECT_SOURCE_DIR}/VINS_Lib/src/loop
@@ -189,6 +245,12 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 
 	add_executable(test_vins_dataset ${PROJECT_SOURCE_DIR}/src/test_vins_dataset.cpp)
 	target_link_libraries(test_vins_dataset ${PROJECT_NAME} ${BOOST_LIBS} ${CERES_LIBS} ${OpenCV_LIBS})
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+	add_library(${PROJECT_NAME} STATIC ${VINS_SOURCE_FILES})
+	target_link_libraries(${PROJECT_NAME} ${CERES_LIBS} ${OpenCV_LIBS} ${BOOST_LIBS} ${PTHREAD_LIBS})
+
+	add_executable(test_vins_dataset ${PROJECT_SOURCE_DIR}/src/test_vins_dataset.cpp)
+	target_link_libraries(test_vins_dataset ${PROJECT_NAME} ${BOOST_LIBS} ${CERES_LIBS} ${OpenCV_LIBS} ${PTHREAD_LIBS})
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Android")
 	add_library(${PROJECT_NAME} SHARED ${VINS_SOURCE_FILES})
 	target_link_libraries(${PROJECT_NAME} ${CERES_LIBS} ${OpenCV_LIBS} ${BOOST_LIBS} -llog)
