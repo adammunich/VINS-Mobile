@@ -141,8 +141,23 @@ bool GlobalSFM::construct(int frame_num, Quaterniond* q, Vector3d* T, int l,
     Matrix3d *c_Rotation = new Matrix3d[frame_num];
     Vector3d *c_Translation = new Vector3d[frame_num];
     Quaterniond *c_Quat = new Quaterniond[frame_num];
+
+#ifdef _WIN32
+	double **c_rotation = new double*[frame_num];
+	for (int i = 0; i < frame_num; ++i)
+	{
+		c_rotation[i] = new double[4];
+	}
+
+	double **c_translation = new double*[frame_num];
+	for (int i = 0; i < frame_num; ++i)
+	{
+		c_translation[i] = new double[3];
+	}
+#else
     double c_rotation[frame_num][4];
     double c_translation[frame_num][3];
+#endif
     Eigen::Matrix<double, 3, 4> *Pose = new Eigen::Matrix<double, 3, 4>[frame_num];
     
     c_Quat[l] = q[l].inverse();
@@ -316,6 +331,18 @@ bool GlobalSFM::construct(int frame_num, Quaterniond* q, Vector3d* T, int l,
         if(sfm_f[i].state)
             sfm_tracked_points[sfm_f[i].id] = Vector3d(sfm_f[i].position[0], sfm_f[i].position[1], sfm_f[i].position[2]);
     }
+
+#ifdef _WIN32
+	for (int i = 0; i < frame_num; ++i)
+	{
+		delete[] c_rotation[i];
+		delete[] c_translation[i];
+	}
+
+	delete[] c_rotation;
+	delete[] c_translation;
+#endif
+
     return true;
     
 }

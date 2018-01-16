@@ -560,9 +560,9 @@ void DrawResult::drawAR(cv::Mat &result, vector<Vector3f> &point_cloud, Vector3f
     
     ////////////////////////////// translation response
     /////////////////////////// follow mode translation response
-    if ( locationX != locationX_p or locationY != locationY_p )
+    if ( locationX != locationX_p || locationY != locationY_p )
     {
-        float xx=FRAME_WIDTH - locationY -1;
+        float xx= (float)FRAME_WIDTH - locationY -1;
         float yy= locationX;
         float cx=PX;
         float cy=PY;
@@ -587,7 +587,7 @@ void DrawResult::drawAR(cv::Mat &result, vector<Vector3f> &point_cloud, Vector3f
         }
         
         
-        if ( dis_min < 120 and Grounds.size()>0 and Grounds[dis_min_idx].moveflag and finger_state == 1)
+        if ( dis_min < 120 && Grounds.size()>0 && Grounds[dis_min_idx].moveflag && finger_state == 1)
         {
             Vector3f rotation_axis;
             rotation_axis<<cy-yy, xx-cx, 0;
@@ -658,7 +658,7 @@ void DrawResult::drawAR(cv::Mat &result, vector<Vector3f> &point_cloud, Vector3f
         
         if (radiusAR!= radius_p)
         {
-            if ( dis_min< 120 and finger_state ==3 and Grounds.size()>0)
+            if ( dis_min< 120 && finger_state ==3 && Grounds.size()>0)
             {
                 Grounds[dis_min_idx].size = Grounds[dis_min_idx].size * (1 + (radius_p - radiusAR)*0.008);
                 
@@ -702,9 +702,9 @@ void DrawResult::drawAR(cv::Mat &result, vector<Vector3f> &point_cloud, Vector3f
         
         
         
-        if (X0AR!=X0_p or Y0AR != Y0_p)
+        if (X0AR!=X0_p || Y0AR != Y0_p)
         {
-            if ( dis_min < 120 and Grounds.size()>0 )
+            if ( dis_min < 120 && Grounds.size()>0 )
             {
                 Matrix3f RWC = R_latest * RIC;
                 
@@ -773,7 +773,7 @@ void DrawResult::drawAR(cv::Mat &result, vector<Vector3f> &point_cloud, Vector3f
             }
         }
         
-        if ( dis_min < 120 and Grounds.size()>0 )
+        if ( dis_min < 120 && Grounds.size()>0 )
         {
             Grounds[dis_min_idx].moveflag = true;
             ////show something
@@ -790,9 +790,9 @@ void DrawResult::drawAR(cv::Mat &result, vector<Vector3f> &point_cloud, Vector3f
     //////////////////////////// long press unlock response
 
     //add new box
-    if (tapFlag and point_inlier.size()>28)
+    if (tapFlag && point_inlier.size()>28)
     {
-        float xx = FRAME_WIDTH - locationTapY -1;
+        float xx = (float)FRAME_WIDTH - locationTapY -1;
         float yy = locationTapX;
         Vector3f Pc;
         Vector2f box_center_xy, center_input;
@@ -817,7 +817,7 @@ void DrawResult::drawAR(cv::Mat &result, vector<Vector3f> &point_cloud, Vector3f
         }
         
         
-        if ( (box_center_xy - center_input).norm()<150 and security_flag)
+        if ( (box_center_xy - center_input).norm()<150 && security_flag)
         {
             Vector3f ori, cox, coy, coz;
             Vector3f linex, liney, linez;

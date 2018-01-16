@@ -48,11 +48,16 @@ std::queue<cv::Mat> tracked_frames;
 int main(int argc, char** argv) {
 
     std::cout << "Test VINS dataset mode...\n";
-
+	
     std::string m_dataset_path = argv[1];
     const char* config_path = argv[2];
+#ifdef _WIN32
+	const char* voc_path = "..\..\Resources/brief_k10L6.bin";
+	const char* pattern_path = "..\..\Resources/brief_pattern.yml";
+#else
     const char* voc_path = "../Resources/brief_k10L6.bin";
     const char* pattern_path = "../Resources/brief_pattern.yml";
+#endif
 
 #ifdef PROCESS_EUROC_DATASET
     const std::string euroc_dataset_path = m_dataset_path + "/cam0/data.csv";
@@ -102,7 +107,7 @@ int main(int argc, char** argv) {
 
     is_running = false;
 
-    cv::destroyAllWindows();
+	cv::destroyAllWindows();
 
     return 0;
 

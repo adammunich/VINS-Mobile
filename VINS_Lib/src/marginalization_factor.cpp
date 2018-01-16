@@ -8,6 +8,11 @@
 
 #include "marginalization_factor.hpp"
 
+#ifdef _WIN32
+#define HAVE_STRUCT_TIMESPEC
+#include "pthread.h"
+#endif
+
 #ifdef ANDROID
 #include <android/log.h>
 #define printf(x...) __android_log_print(ANDROID_LOG_DEBUG, "marginalization_factor", x)

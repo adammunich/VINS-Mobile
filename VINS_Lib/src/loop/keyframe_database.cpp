@@ -153,11 +153,25 @@ void KeyFrameDatabase::optimize4DoFLoopPoseGraph(int cur_index, Eigen::Vector3d 
         earliest_loop_index = loop_index;
     assert(cur_kf->has_loop == 1);
     int max_length = cur_index + 1;
-    
-    // w^t_i   w^q_i
+
+	// w^t_i   w^q_i
+#ifdef _WIN32
+	double **t_array = new double*[max_length];
+	for (int i = 0; i < max_length; ++i) 
+	{
+		t_array[i] = new double[3];
+	}
+
+	double **euler_array = new double*[max_length];
+	for (int i = 0; i < max_length; ++i)
+	{
+		euler_array[i] = new double[3];
+	}
+#else
     double t_array[max_length][3];
+	double euler_array[max_length][3];
+#endif
     Quaterniond *q_array = new Quaterniond[max_length];
-    double euler_array[max_length][3];
     vector<bool> need_resample;
     
     ceres::Problem problem;
@@ -360,6 +374,17 @@ void KeyFrameDatabase::optimize4DoFLoopPoseGraph(int cur_index, Eigen::Vector3d 
     loop_correct_r = r_drift;
     updateVisualization();
     delete[] q_array;
+
+#ifdef _WIN32
+	for (int i = 0; i < max_length; ++i)
+	{
+		delete[] t_array[i];
+		delete[] euler_array[i];
+	}
+
+	delete[] t_array;
+	delete[] euler_array;
+#endif
 }
 
 void KeyFrameDatabase::updateVisualization()

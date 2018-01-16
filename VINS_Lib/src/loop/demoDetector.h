@@ -27,8 +27,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#ifdef _WIN32 
+#else
 #include "dirent.h"
 #include <unistd.h>
+#endif
 #include <string>
 #include <ctime>
 #include <cstdlib>

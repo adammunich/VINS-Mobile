@@ -10,6 +10,12 @@
 #define utility_hpp
 
 #include <stdio.h>
+#ifdef _WIN32
+#define _USE_MATH_DEFINES
+#ifndef M_PI
+#define M_PI 3.1415926535
+#endif
+#endif
 #include <cmath>
 #include <cassert>
 #include <cstring>
